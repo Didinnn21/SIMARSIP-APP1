@@ -1,0 +1,150 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Peminjaman Peralatan - SIMARSIP</title>
+  <link rel="stylesheet" href="https://cdn.framework7.io/framework7/5.7.10/css/framework7.min.css">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    * { -webkit-tap-highlight-color: transparent; }
+    body { background: #f6fbff; }
+    .page-content { padding: 16px; padding-bottom: calc(60px + 16px); }
+    .form-row { margin-bottom: 12px; }
+    .form-label { display:block; font-size:13px; margin-bottom:6px; font-weight:600 }
+    .required-mark { color:#dc2626 }
+    input, textarea, select { width:100%; padding:10px; border-radius:8px; border:1px solid #dfeaf7 }
+    textarea { min-height:80px }
+    .file-info-text{ color:#666; font-size:12px }
+    .error-message{ color:#b91c1c; min-height:18px; margin-bottom:12px }
+    .actions{ margin-top:16px; display:flex; gap:8px }
+    .button-fill{ background:#1e73ff; color:#fff; border:none; padding:10px 12px; border-radius:8px }
+  </style>
+</head>
+<body>
+  <header class="app-header">
+    <div class="app-header-inner">
+      <div style="display:flex;align-items:center;gap:8px"><a href="index.html" style="color:#fff;text-decoration:none"><i class="material-icons">arrow_back</i></a><div style="font-weight:700;color:#fff">Peminjaman Peralatan</div></div>
+      <div></div>
+    </div>
+  </header>
+
+  <main class="page-content">
+    <div id="form-error" class="error-message"></div>
+    <form id="add-equipment-form">
+      <div class="form-row">
+        <label class="form-label">Nama Kegiatan <span class="required-mark">*</span></label>
+        <input id="eventName" name="eventName" type="text" placeholder="Contoh: Workshop, Dokumentasi" required>
+      </div>
+
+      <div class="form-row">
+        <label class="form-label">Nama Peralatan <span class="required-mark">*</span></label>
+        <input id="equipmentName" name="equipmentName" type="text" placeholder="Contoh: Proyektor, Kamera, Sound System" required>
+      </div>
+
+      <div class="form-row">
+        <label class="form-label">Jumlah <span class="required-mark">*</span></label>
+        <input id="quantity" name="quantity" type="number" min="1" placeholder="Masukkan jumlah alat" required>
+      </div>
+
+      <div class="form-row">
+        <label class="form-label">Tanggal Peminjaman <span class="required-mark">*</span></label>
+        <input id="borrowDate" name="borrowDate" type="text" placeholder="Pilih dari kalender" readonly>
+        <button type="button" class="button" style="margin-top:8px;width:fit-content;padding:8px;" onclick="openCalendarForDateSelection('#borrowDate','peralatan')">Buka Kalender</button>
+      </div>
+
+      <div class="form-row">
+        <label class="form-label">Catatan (Opsional)</label>
+        <textarea id="notes" name="notes" placeholder="Keterangan tambahan..."></textarea>
+      </div>
+
+      <div class="form-row">
+        <label class="form-label">Unggah Softfile Surat <span class="required-mark">*</span></label>
+        <input id="letterFile" name="letterFile" type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" required>
+        <small class="file-info-text">Format: PDF, DOC, DOCX, JPG, PNG (Max 5MB)</small>
+        <div id="fileInfo"></div>
+      </div>
+
+      <div class="actions">
+        <button type="button" id="cancel" class="button">Batal</button>
+        <button type="submit" class="button-fill">Ajukan Peminjaman</button>
+      </div>
+    </form>
+  </main>
+
+  <script>
+    // helper to open calendar and set return context
+    function openCalendarForDateSelection(selector, context){
+      try{ localStorage.setItem('dateTarget', selector); localStorage.setItem('dateTargetContext', context); }catch(e){}
+      window.location.href = 'calendar.html';
+    }
+
+    // prefill if selectedDate exists
+    (function(){
+      var input = document.getElementById('borrowDate');
+      var sel = localStorage.getItem('selectedDate');
+      if(sel) input.value = sel;
+
+      var fileInput = document.getElementById('letterFile');
+      var fileInfo = document.getElementById('fileInfo');
+      var form = document.getElementById('add-equipment-form');
+      var errorDiv = document.getElementById('form-error');
+
+      fileInput.addEventListener('change', function(){
+        if(!this.files.length){ fileInfo.innerHTML=''; return }
+        var f = this.files[0];
+        var sizeKB = (f.size/1024).toFixed(2);
+        if(f.size > 5242880){ fileInfo.innerHTML = '<span style="color:#dc2626">File terlalu besar (max 5MB)</span>'; return }
+        fileInfo.innerHTML = '✓ ' + f.name + ' ('+sizeKB+' KB)';
+      });
+
+      document.getElementById('cancel').addEventListener('click', function(){ window.location.href='index.html' });
+
+      // Firebase init (compat)
+      var db; var firebaseLoaded = false;
+      (function loadFirebase(){
+        var s1 = document.createElement('script'); s1.src='https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js';
+        s1.onload = function(){ var s2=document.createElement('script'); s2.src='https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js'; s2.onload=function(){
+          try{
+            if(!firebase.apps.length){
+              var cfg = { apiKey: "AIzaSyBtyn-cjuhsnlEn-9Wao1tCcJfUQbf6GnY", authDomain: "simarsip-apk.firebaseapp.com", databaseURL: "https://simarsip-apk-default-rtdb.asia-southeast1.firebasedatabase.app", projectId: "simarsip-apk", storageBucket: "simarsip-apk.firebasestorage.app", messagingSenderId: "707332524030", appId: "1:707332524030:web:d91551b5f199df489622af" };
+              firebase.initializeApp(cfg); db = firebase.database(); firebaseLoaded = true;
+            }
+          }catch(err){ console.warn('Firebase init error',err.message) }
+        }; document.head.appendChild(s2) }; document.head.appendChild(s1);
+      })();
+
+      form.addEventListener('submit', function(e){
+        e.preventDefault(); errorDiv.innerHTML='';
+        var payload = {
+          type: 'peralatan',
+          eventName: this.eventName.value,
+          equipmentName: this.equipmentName.value,
+          quantity: this.quantity.value,
+          borrowDate: this.borrowDate.value || localStorage.getItem('selectedDate') || '',
+          notes: this.notes.value || '',
+          status: 'pending',
+          createdAt: new Date().toISOString()
+        };
+
+        if(!payload.borrowDate){ errorDiv.innerHTML='Tanggal harus dipilih'; return }
+        if(!this.letterFile.files.length){ errorDiv.innerHTML='Surat harus diunggah'; return }
+
+        if(firebaseLoaded && db){
+          try{
+            var ref = db.ref('pengajuan/peralatan').push();
+            ref.set(payload).then(function(){ localStorage.removeItem('selectedDate'); alert('Peminjaman peralatan berhasil diajukan'); window.location.href='index.html'; }).catch(function(err){ errorDiv.innerHTML='Gagal menyimpan: '+err.message });
+            return;
+          }catch(err){ console.error(err) }
+        }
+
+        // fallback localStorage
+        try{ var p = JSON.parse(localStorage.getItem('pengajuan')||'{}'); if(!p.peralatan) p.peralatan=[]; p.peralatan.push(payload); localStorage.setItem('pengajuan', JSON.stringify(p)); }catch(err){}
+        localStorage.removeItem('selectedDate'); alert('Peminjaman peralatan berhasil diajukan (offline)'); window.location.href='index.html';
+      });
+
+    })();
+  </script>
+</body>
+</html>

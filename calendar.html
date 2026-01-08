@@ -1,0 +1,506 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Kalender - SIMARSIP</title>
+  <link rel="stylesheet" href="https://cdn.framework7.io/framework7/5.7.10/css/framework7.min.css">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { 
+      margin: 0; 
+      padding: 0; 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+      background: #fafafa;
+      max-width: 480px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    
+    .app-header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 16px 12px;
+      color: white;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .app-header a {
+      color: white;
+      text-decoration: none;
+      font-size: 24px;
+      display: flex;
+      line-height: 1;
+    }
+    
+    .app-header-inner {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+    }
+    
+    .app-header-title {
+      font-weight: 600;
+      font-size: 16px;
+    }
+
+    .page {
+      padding: 16px 12px;
+      padding-bottom: 80px;
+    }
+
+    .calendar-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      gap: 8px;
+    }
+
+    .calendar-header button {
+      background: #fff;
+      border: 1px solid #e0e0e0;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 18px;
+      color: #667eea;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.2s ease;
+    }
+
+    .calendar-header button:active {
+      background: #f5f5f5;
+      transform: scale(0.95);
+    }
+
+    #title {
+      font-weight: 700;
+      font-size: 18px;
+      flex: 1;
+      text-align: center;
+      color: #333;
+    }
+
+    #grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 8px;
+      margin-bottom: 20px;
+      padding: 12px;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    #grid .day {
+      aspect-ratio: 1;
+      padding: 0;
+      text-align: center;
+      border-radius: 12px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      font-size: 12px;
+      font-weight: 600;
+      border: 1px solid transparent;
+      transition: all 0.2s ease;
+      background: #f5f5f5;
+      color: #666;
+      min-height: 40px;
+    }
+
+    #grid .day:empty {
+      cursor: default;
+      background: transparent;
+      border: none;
+    }
+
+    #grid .day.available {
+      background: #a8e6cf;
+      color: #2d5016;
+    }
+
+    #grid .day.pending {
+      background: #ffd3b6;
+      color: #8b4513;
+    }
+
+    #grid .day.borrowed {
+      background: #ffaaa5;
+      color: #6b0000;
+    }
+
+    #grid .day.returned {
+      background: #aa96da;
+      color: #3d1a5f;
+    }
+
+    #grid .day.selected-day {
+      outline: 2px solid #667eea;
+      outline-offset: 2px;
+      transform: scale(1.05);
+    }
+
+    .legend-title {
+      text-align: center;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 12px;
+      font-size: 13px;
+    }
+
+    .calendar-legend {
+      background: white;
+      padding: 12px;
+      border-radius: 16px;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      font-size: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      margin-bottom: 20px;
+    }
+
+    .calendar-legend div {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #666;
+    }
+
+    .legend-box {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border-radius: 6px;
+      flex-shrink: 0;
+    }
+
+    .legend-box.available { background: #a8e6cf; }
+    .legend-box.pending { background: #ffd3b6; }
+    .legend-box.borrowed { background: #ffaaa5; }
+    .legend-box.returned { background: #aa96da; }
+
+    .fab {
+      position: fixed;
+      right: 16px;
+      bottom: 70px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      width: 56px;
+      height: 56px;
+      border-radius: 16px;
+      font-size: 28px;
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      transition: all 0.2s ease;
+    }
+
+    .fab:active {
+      transform: translateY(2px);
+      box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+    }
+
+    /* FAB dropdown: icon-only, compact modal popup */
+    .fab-container { position: fixed; right: 16px; bottom: 70px; z-index: 200; }
+    .fab-menu { position: fixed; right: 8px; bottom: 130px; background: white; border-radius: 14px; box-shadow: 0 8px 24px rgba(102, 126, 234, 0.2); padding: 10px; display: flex; flex-direction: column; gap: 6px; transition: all 0.2s ease; opacity: 0; transform: scale(0.85) translateY(8px); pointer-events: none; }
+    .fab-menu[aria-hidden="false"] { opacity: 1; transform: scale(1) translateY(0); pointer-events: auto; }
+    .fab-item { background: transparent; border: none; width: 48px; height: 48px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 26px; transition: all 0.15s ease; position: relative; }
+    .fab-item:hover { background: #f5f5f5; }
+    .fab-item:active { transform: scale(0.92); }
+    .fab-item[data-ctx="peminjaman"] { color: #2b6cb0; }
+    .fab-item[data-ctx="dispensasi"] { color: #b07b2b; }
+    .fab-item[data-ctx="peralatan"] { color: #2f855a; }
+    .fab-item:hover::after { content: attr(title); position: absolute; right: 56px; background: #333; color: white; padding: 4px 8px; border-radius: 6px; font-size: 11px; white-space: nowrap; font-weight: 500; pointer-events: none; }
+  </style>
+</head>
+<body>
+  <header class="app-header" style="padding:12px 16px 18px 16px; border-bottom-left-radius:0;border-bottom-right-radius:0">
+    <div class="app-header-inner">
+      <div style="font-weight:700;color:#fff">Kalender</div>
+      <div></div>
+    </div>
+  </header>
+
+  <main class="page">
+    <div class="calendar-header" style="display:flex;align-items:center;justify-content:space-between">
+      <button id="prev" class="button" style="background:transparent;border:none;font-size:20px">&#x2039;</button>
+      <div id="title" style="font-weight:700;font-size:18px">November 2025</div>
+      <button id="next" class="button" style="background:transparent;border:none;font-size:20px">&#x203A;</button>
+    </div>
+
+    <div id="grid" class="calendar-grid" aria-live="polite"></div>
+
+    <div class="legend-title">Status Peminjaman</div>
+    <div class="calendar-legend">
+      <div><span class="legend-box available"></span> Tersedia</div>
+      <div><span class="legend-box pending"></span> Pending</div>
+      <div><span class="legend-box borrowed"></span> Sedang dipinjam</div>
+      <div><span class="legend-box returned"></span> Sudah dikembalikan</div>
+    </div>
+
+  </main>
+
+  <div class="fab-container">
+    <button id="fab" class="fab" title="Tambah">+</button>
+    <div id="fabMenu" class="fab-menu" aria-hidden="true">
+      <button class="fab-item" data-ctx="peminjaman" title="Peminjaman Ruangan"><i class="material-icons">domain</i></button>
+      <button class="fab-item" data-ctx="dispensasi" title="Surat Dispen"><i class="material-icons">description</i></button>
+      <button class="fab-item" data-ctx="peralatan" title="Peminjaman Peralatan"><i class="material-icons">devices</i></button>
+    </div>
+  </div>
+
+  <script>
+    // Calendar UI with optional Firebase Realtime DB integration.
+    (function(){
+      var grid = document.getElementById('grid');
+      var title = document.getElementById('title');
+      var prev = document.getElementById('prev');
+      var next = document.getElementById('next');
+      var fab = document.getElementById('fab');
+      var current = new Date();
+      var selectedDate = null;
+
+      // firebase state
+      var firebaseReady = false;
+      var dbRef = null;
+      var remoteData = {};
+
+      function loadLocal(){ try{ return JSON.parse(localStorage.getItem('calendarData')||'{}') }catch(e){return{}} }
+      function saveLocal(d){ localStorage.setItem('calendarData', JSON.stringify(d)); }
+
+      // render function reads either remoteData (if firebaseReady) or local
+      function render(date){
+        grid.innerHTML='';
+        var year = date.getFullYear();
+        var month = date.getMonth();
+        
+        // Format bulan + tahun (capitalize first letter)
+        var monthNames = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+        title.textContent = monthNames[month] + ' ' + year;
+        
+        // Weekday headers (Minggu - Sabtu)
+        var weekdays=['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
+        weekdays.forEach(function(w){ 
+          var h=document.createElement('div'); 
+          h.className='day'; 
+          h.style.fontWeight='700'; 
+          h.style.background='transparent'; 
+          h.style.color='#6b7a95'; 
+          h.textContent=w; 
+          grid.appendChild(h); 
+        });
+        
+        // First day offset
+        var first = new Date(year, month, 1);
+        var last = new Date(year, month+1, 0);
+        var start = first.getDay();
+        for(var i=0;i<start;i++){ 
+          var e=document.createElement('div'); 
+          e.className='day'; 
+          e.style.background='transparent'; 
+          e.style.cursor='default';
+          grid.appendChild(e); 
+        }
+        
+        // Calendar dates
+        var data = firebaseReady ? remoteData : loadLocal();
+        for(var d=1; d<=last.getDate(); d++){
+          var ymd = year+'-'+String(month+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+          var info = data[ymd];
+          
+          // Check if info is array/object of bookings (Firebase structure)
+          var status = 'available';
+          if(info){
+            if(typeof info === 'object' && !info.status){
+              // Firebase format: {"-id1": {...}, "-id2": {...}}
+              // If object has keys (bookings exist), mark as pending
+              if(Object.keys(info).length > 0) status = 'pending';
+            } else if(info.status){
+              // localStorage format
+              status = info.status;
+            }
+          }
+          
+          var cell = document.createElement('div');
+          cell.className='day';
+          cell.classList.add(status);
+          
+          var num = document.createElement('div');
+          num.style.fontWeight='700';
+          num.textContent=d;
+          cell.appendChild(num);
+          
+          if(status !== 'available'){
+            var lbl=document.createElement('div');
+            lbl.style.fontSize='11px';
+            lbl.style.marginTop='2px';
+            lbl.textContent = (status==='borrowed'?'Pinjam':(status==='returned'?'Kembali':(status==='pending'?'Pending':'Tersedia')));
+            cell.appendChild(lbl);
+          }
+          
+          (function(ymd, cell){
+            cell.addEventListener('click', function(){
+              try{ localStorage.setItem('selectedDate', ymd); }catch(e){}
+              document.querySelectorAll('#grid .day.selected-day').forEach(function(el){
+                el.classList.remove('selected-day');
+              });
+              cell.classList.add('selected-day');
+
+              // If a date target context was set, navigate back to that form page
+              try{
+                var ctx = localStorage.getItem('dateTargetContext');
+                if(ctx){
+                  // clear context after use
+                  localStorage.removeItem('dateTargetContext');
+                  localStorage.removeItem('dateTarget');
+                  if(ctx === 'peralatan') window.location.href = 'peralatan.html';
+                  else if(ctx === 'dispen' || ctx === 'dispensasi') window.location.href = 'dispensasi.html';
+                  else if(ctx === 'peminjaman') window.location.href = 'peminjaman.html';
+                }
+              }catch(e){}
+            });
+          })(ymd, cell);
+          
+          grid.appendChild(cell);
+        }
+      }
+
+      prev.addEventListener('click', function(){ current = new Date(current.getFullYear(), current.getMonth()-1,1); render(current); });
+      next.addEventListener('click', function(){ current = new Date(current.getFullYear(), current.getMonth()+1,1); render(current); });
+
+      // FAB dropdown behavior: toggle menu and set dateTargetContext for calendar selections
+      var fabMenu = document.getElementById('fabMenu');
+      function closeFabMenu(){ if(!fabMenu) return; fabMenu.setAttribute('aria-hidden','true'); }
+      function openFabMenu(){ if(!fabMenu) return; fabMenu.setAttribute('aria-hidden','false'); }
+
+      fab.addEventListener('click', function(e){
+        if(!fabMenu) return;
+        var hidden = fabMenu.getAttribute('aria-hidden') === 'true';
+        if(hidden) openFabMenu(); else closeFabMenu();
+        e.stopPropagation();
+      });
+
+      // clicking an item sets the calendar context so selecting a date will redirect to the chosen form
+      document.querySelectorAll('.fab-item').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    var ctx = this.getAttribute('data-ctx');
+    try{ localStorage.setItem('dateTargetContext', ctx); }catch(e){}
+    closeFabMenu();
+
+    // Auto redirect ke halaman sesuai tombol FAB
+    if(ctx === "peminjaman") {
+      window.location.href = "peminjaman.html";
+    } else if(ctx === "dispensasi") {
+      window.location.href = "dispensasi.html";
+    } else if(ctx === "peralatan") {
+      window.location.href = "peralatan.html";
+    }
+  });
+});
+
+
+      // close menu when clicking outside
+      document.addEventListener('click', function(){ closeFabMenu(); });
+
+      // --- Firebase v9+ init ---
+      var firebaseReady = false;
+      var remoteData = {};
+      var dbRef = null;
+      
+      function initFirebase(){
+        var script = document.createElement('script');
+        script.src = 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js';
+        script.onload = function(){
+          var dbScript = document.createElement('script');
+          dbScript.src = 'https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js';
+          dbScript.onload = function(){
+            try{
+              var firebaseConfig = {
+                apiKey: "AIzaSyBtyn-cjuhsnlEn-9Wao1tCcJfUQbf6GnY",
+                authDomain: "simarsip-apk.firebaseapp.com",
+                databaseURL: "https://simarsip-apk-default-rtdb.asia-southeast1.firebasedatabase.app",
+                projectId: "simarsip-apk",
+                storageBucket: "simarsip-apk.firebasestorage.app",
+                messagingSenderId: "707332524030",
+                appId: "1:707332524030:web:d91551b5f199df489622af"
+              };
+              
+              if(!firebase.apps.length){
+                firebase.initializeApp(firebaseConfig);
+                dbRef = firebase.database().ref('peminjaman');
+                dbRef.on('value', function(snap){ 
+                  remoteData = snap.val() || {}; 
+                  firebaseReady = true; 
+                  render(current);
+                }, function(err){ 
+                  console.warn('Firebase read error:', err.message);
+                  render(current);
+                });
+              }
+            }catch(e){ 
+              console.warn('Firebase init failed, using localStorage:', e.message);
+              render(current);
+            }
+          };
+          document.head.appendChild(dbScript);
+        };
+        document.head.appendChild(script);
+      }
+      initFirebase();
+
+      // initial render
+      render(current);
+    })();
+  </script>
+
+  <!-- Bottom toolbar -->
+        <div class="toolbar toolbar-bottom app-toolbar">
+            <div class="toolbar-inner">
+                <a href="index.html" class="link link-home">
+                    <i class="material-icons">home</i>
+                    <span class="tabbar-label">Beranda</span>
+                </a>
+                <a href="calendar.html" class="link active"> 
+                    <i class="material-icons">calendar_today</i>
+                    <span class="tabbar-label">Kalender</span>
+                </a>
+                <a href="notifikasi.html" class="link">
+                    <i class="material-icons">notifications</i>
+                    <span class="tabbar-label">Notifikasi</span>
+                </a>
+                <a href="#" class="link">
+                    <i class="material-icons">help_outline</i>
+                    <span class="tabbar-label">Bantuan</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+  <style>
+    body {
+      padding-bottom: calc(56px + max(0px, env(safe-area-inset-bottom)));
+    }
+  </style>
+</body>
+</html>

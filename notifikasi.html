@@ -1,0 +1,499 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Notifikasi - SIMARSIP</title>
+  <link rel="stylesheet" href="https://cdn.framework7.io/framework7/5.7.10/css/framework7.min.css">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    * { 
+      box-sizing: border-box; 
+      -webkit-tap-highlight-color: transparent;
+    }
+    html, body { 
+      margin: 0; 
+      padding: 0; 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+      background: #fafafa;
+      max-width: 480px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    
+    .app-header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 16px 12px;
+      color: white;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .app-header-inner {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+    }
+
+    .page-content { 
+      padding: 16px;
+      padding-bottom: calc(60px + 16px);
+    }
+
+    .notif-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .notif-category {
+      margin-bottom: 16px;
+    }
+
+    .notif-category-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #667eea;
+      text-transform: uppercase;
+      padding: 0 4px;
+      margin-bottom: 8px;
+      letter-spacing: 0.5px;
+    }
+
+    .notif-item {
+      background: white;
+      border-radius: 12px;
+      padding: 12px;
+      display: flex;
+      gap: 12px;
+      border-left: 4px solid #667eea;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .notif-item:hover {
+      box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+      transform: translateY(-1px);
+    }
+
+    .notif-item.unread {
+      background: #f8f9ff;
+      border-left-color: #667eea;
+    }
+
+    .notif-item.approved {
+      border-left-color: #1e73ff;
+    }
+
+    .notif-item.warning {
+      border-left-color: #ff9800;
+    }
+
+    .notif-item.completed {
+      border-left-color: #4caf50;
+    }
+
+    .notif-icon {
+      flex-shrink: 0;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      color: white;
+    }
+
+    .notif-icon.approved {
+      background: #1e73ff;
+    }
+
+    .notif-icon.warning {
+      background: #ff9800;
+    }
+
+    .notif-icon.completed {
+      background: #4caf50;
+    }
+
+    .notif-content {
+      flex: 1;
+    }
+
+    .notif-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 4px;
+    }
+
+    .notif-message {
+      font-size: 13px;
+      color: #666;
+      line-height: 1.4;
+      margin-bottom: 6px;
+    }
+
+    .notif-time {
+      font-size: 11px;
+      color: #999;
+    }
+
+    .notif-badge {
+      flex-shrink: 0;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #667eea;
+      margin-top: 4px;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px 16px;
+    }
+
+    .empty-icon {
+      font-size: 48px;
+      color: #ccc;
+      margin-bottom: 12px;
+    }
+
+    .empty-text {
+      font-size: 14px;
+      color: #999;
+    }
+
+    .actions {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: white;
+      border-top: 1px solid #e0e0e0;
+      padding: 12px;
+      display: flex;
+      gap: 8px;
+      max-width: 480px;
+      margin-left: auto;
+      margin-right: auto;
+      z-index: 50;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-secondary {
+      background: #e0e0e0;
+      color: #333;
+    }
+
+    .btn-secondary:active {
+      background: #d0d0d0;
+    }
+
+    .btn-primary {
+      background: #667eea;
+      color: white;
+    }
+
+    .btn-primary:active {
+      background: #5568d3;
+    }
+
+    .toolbar {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding: 12px 0;
+      padding-bottom: max(12px, env(safe-area-inset-bottom));
+      background: #fff;
+      border-top: 1px solid #e0e0e0;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    .toolbar a {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      text-decoration: none;
+      color: #666;
+      font-size: 12px;
+    }
+
+    .toolbar a.active {
+      color: #667eea;
+      font-weight: 600;
+    }
+
+    .toolbar i {
+      font-size: 24px;
+    }
+  </style>
+</head>
+<body>
+  <header class="app-header">
+    <div class="app-header-inner">
+      <div style="font-weight:700;color:#fff">Notifikasi</div>
+      <div></div>
+    </div>
+  </header>
+
+  <main class="page-content" id="notifi-container">
+    <!-- Notifikasi akan diisi dari JavaScript -->
+  </main>
+
+  <div class="actions">
+    <button class="btn btn-secondary" id="mark-all">Tandai Semua</button>
+    <button class="btn btn-primary" id="close-notif" onclick="window.location.href='index.html'">Tutup</button>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <a href="index.html">
+      <i class="material-icons">home</i>
+      Beranda
+    </a>
+    <a href="calendar.html">
+      <i class="material-icons">calendar_today</i>
+      Kalender
+    </a>
+    <a href="notifikasi.html" class="active">
+      <i class="material-icons">notifications</i>
+      Notifikasi
+    </a>
+    <a href="#" onclick="alert('Bantuan masih dalam pengembangan');">
+      <i class="material-icons">help</i>
+      Bantuan
+    </a>
+  </div>
+
+  <script>
+    // Initialize Firebase v9+
+    var db;
+    var firebaseLoaded = false;
+    function loadFirebase(){
+      var script1 = document.createElement('script');
+      script1.src = 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js';
+      script1.onload = function(){
+        var script2 = document.createElement('script');
+        script2.src = 'https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js';
+        script2.onload = function(){
+          try{
+            if(!firebase.apps.length){
+              var firebaseConfig = {
+                apiKey: "AIzaSyBtyn-cjuhsnlEn-9Wao1tCcJfUQbf6GnY",
+                authDomain: "simarsip-apk.firebaseapp.com",
+                databaseURL: "https://simarsip-apk-default-rtdb.asia-southeast1.firebasedatabase.app",
+                projectId: "simarsip-apk",
+                storageBucket: "simarsip-apk.firebasestorage.app",
+                messagingSenderId: "707332524030",
+                appId: "1:707332524030:web:d91551b5f199df489622af"
+              };
+              firebase.initializeApp(firebaseConfig);
+              db = firebase.database();
+              firebaseLoaded = true;
+              initNotifications();
+            }
+          }catch(err){ console.warn('Firebase init error:', err.message); initNotifications(); }
+        };
+        document.head.appendChild(script2);
+      };
+      document.head.appendChild(script1);
+    }
+    loadFirebase();
+    
+    (function(){
+      var container = document.getElementById('notifi-container');
+      var notifications = [];
+      
+      // Load dari localStorage
+      var saved = localStorage.getItem('notifications');
+      if(saved) notifications = JSON.parse(saved);
+
+      window.initNotifications = function(){
+        // Listen to Firebase peminjaman data
+        if(firebaseLoaded && db){
+          var peminjamanRef = db.ref('peminjaman');
+          peminjamanRef.on('value', function(snap){
+            var data = snap.val() || {};
+            notifications = []; // Reset
+            
+            // Convert Firebase structure to notifications
+            Object.keys(data).forEach(function(date){
+              var dateBookings = data[date];
+              if(typeof dateBookings === 'object'){
+                Object.keys(dateBookings).forEach(function(bookingId){
+                  var booking = dateBookings[bookingId];
+                  var notif = {
+                    id: date + '-' + bookingId,
+                    category: 'Pengajuan Peminjaman',
+                    type: 'approved',
+                    title: 'Pengajuan Peminjaman',
+                    message: (booking.title || 'Peminjaman') + ' untuk ruangan ' + (booking.room || 'Ruang') + ' pada ' + date,
+                    time: 'Baru saja',
+                    unread: true,
+                    booking: booking,
+                    date: date
+                  };
+                  notifications.push(notif);
+                });
+              }
+            });
+            
+            // Tambah dummy notifications jika ada
+            var dummy = [
+              {
+                id: 'dummy-1',
+                category: 'Pengajuan Disetujui',
+                type: 'approved',
+                title: 'Pengajuan Disetujui',
+                message: 'Peminjaman Lab Komputer untuk tanggal 01/06/2025 telah disetujui',
+                time: '3 hari yang lalu',
+                unread: false
+              },
+              {
+                id: 'dummy-2',
+                category: 'Perlu Tindakan',
+                type: 'warning',
+                title: 'Perlu Tindakan',
+                message: 'Verifikasi diperlukan untuk surat peminjaman',
+                time: '1 hari yang lalu',
+                unread: true
+              }
+            ];
+            
+            // Merge dengan existing dummy (jangan duplikasi)
+            dummy.forEach(function(d){
+              if(!notifications.find(n => n.id === d.id)) notifications.push(d);
+            });
+            
+            localStorage.setItem('notifications', JSON.stringify(notifications));
+            renderNotifications();
+          });
+        } else {
+          // Fallback jika Firebase tidak ready
+          var saved = localStorage.getItem('notifications');
+          notifications = saved ? JSON.parse(saved) : [
+            {
+              id: 1,
+              category: 'Pengajuan Peminjaman',
+              type: 'approved',
+              title: 'Pengajuan Peminjaman',
+              message: 'Peminjaman Lab Komputer sedang diproses',
+              time: 'Baru saja',
+              unread: true
+            },
+            {
+              id: 'dummy-2',
+              category: 'Perlu Tindakan',
+              type: 'warning',
+              title: 'Perlu Tindakan',
+              message: 'Verifikasi diperlukan untuk surat peminjaman',
+              time: '1 hari yang lalu',
+              unread: true
+            }
+          ];
+          renderNotifications();
+        }
+      };
+
+      function renderNotifications(){
+        if(!notifications || notifications.length === 0){
+          container.innerHTML = '<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">Tidak ada notifikasi</div></div>';
+          return;
+        }
+
+        // Group by category
+        var grouped = {};
+        notifications.forEach(function(n){
+          if(!grouped[n.category]) grouped[n.category] = [];
+          grouped[n.category].push(n);
+        });
+
+        var html = '<div class="notif-container">';
+        Object.keys(grouped).forEach(function(cat){
+          html += '<div class="notif-category">';
+          html += '<div class="notif-category-title">' + cat + '</div>';
+          grouped[cat].forEach(function(n){
+            html += '<div class="notif-item ' + n.type + (n.unread ? ' unread' : '') + '" onclick="markAsRead(\'' + n.id + '\')">';
+            html += '<div class="notif-icon ' + n.type + '">' + (n.type === 'approved' ? '<i class="material-icons">check</i>' : n.type === 'warning' ? '<i class="material-icons">warning</i>' : '<i class="material-icons">check_circle</i>') + '</div>';
+            html += '<div class="notif-content">';
+            html += '<div class="notif-title">' + n.title + '</div>';
+            html += '<div class="notif-message">' + n.message + '</div>';
+            html += '<div class="notif-time">' + n.time + '</div>';
+            html += '</div>';
+            if(n.unread) html += '<div class="notif-badge"></div>';
+            html += '</div>';
+          });
+          html += '</div>';
+        });
+        html += '</div>';
+        container.innerHTML = html;
+      }
+
+      window.markAsRead = function(id){
+        notifications.forEach(function(n){
+          if(n.id === id) n.unread = false;
+        });
+        localStorage.setItem('notifications', JSON.stringify(notifications));
+        renderNotifications();
+      };
+
+      document.getElementById('mark-all').addEventListener('click', function(){
+        notifications.forEach(function(n){ n.unread = false; });
+        localStorage.setItem('notifications', JSON.stringify(notifications));
+        renderNotifications();
+      });
+
+      // Initial render with dummy data (while Firebase loads)
+      var dummy = [
+        {
+          id: 'dummy-1',
+          category: 'Pengajuan Disetujui',
+          type: 'approved',
+          title: 'Pengajuan Disetujui',
+          message: 'Peminjaman Lab Komputer untuk tanggal 01/06/2025 telah disetujui',
+          time: '3 hari yang lalu',
+          unread: false
+        },
+        {
+          id: 'dummy-2',
+          category: 'Perlu Tindakan',
+          type: 'warning',
+          title: 'Perlu Tindakan',
+          message: 'Verifikasi diperlukan untuk surat peminjaman',
+          time: '1 hari yang lalu',
+          unread: true
+        }
+      ];
+      notifications = dummy;
+      renderNotifications();
+    })();
+  </script>
+</body>
+</html>

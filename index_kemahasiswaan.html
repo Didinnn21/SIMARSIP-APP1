@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <title>SIMARSIP APP</title>
+
+  <!-- Framework7 CSS -->
+  <link rel="stylesheet" href="https://cdn.framework7.io/framework7/5.7.10/css/framework7.min.css">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+  <style>
+    /* Reset default margin and padding */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background: #f5f5f5;
+    }
+
+    /* Header Styles */
+    .app-header {
+      background: linear-gradient(135deg, #1e88ff 0%, #1976d2 100%);
+      color: white;
+      padding: 16px 16px 24px 16px;
+      width: 100%;
+      position: relative;
+    }
+
+    .app-header-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .app-title {
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .user-chip {
+      display: flex;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 20px;
+      padding: 6px 12px;
+      cursor: pointer;
+    }
+
+    .user-name {
+      font-size: 14px;
+      margin-right: 6px;
+    }
+
+    .user-icon {
+      font-size: 20px;
+    }
+
+    /* Welcome Card - with margins */
+    .welcome-card {
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      padding: 20px;
+      margin-top: 8px;
+      width: calc(100% - 0px);
+    }
+
+    .welcome-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .welcome-sub {
+      font-size: 14px;
+      opacity: 0.9;
+    }
+
+    /* Main container for content */
+    .content-container {
+      padding: 0 16px;
+      width: 100%;
+    }
+
+    /* Page Content */
+    .page-content {
+      padding: 0;
+      background: #f5f5f5;
+      width: 100%;
+    }
+
+    /* Section Title */
+    .section-title {
+      font-weight: 600;
+      font-size: 16px;
+      color: #333;
+      padding: 16px 0 8px 0;
+      background: #f5f5f5;
+    }
+
+    /* Approval Container - with same width as welcome card */
+    .approval-container {
+      width: 100%;
+      padding: 0;
+    }
+
+    /* Approval Card - same width as welcome card */
+    .approval-card {
+      background: white;
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      width: 100%;
+      border: none;
+    }
+
+    .approval-title {
+      font-weight: 600;
+      font-size: 15px;
+      color: #333;
+      margin-bottom: 6px;
+    }
+
+    .approval-date {
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 20px;
+    }
+
+    /* Button Group */
+    .btn-group {
+      display: flex;
+      gap: 12px;
+      width: 100%;
+    }
+
+    .btn-approve {
+      flex: 1;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 14px;
+      font-weight: 500;
+      text-align: center;
+      cursor: pointer;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+
+    .btn-approve:active {
+      background: #388E3C;
+      transform: scale(0.98);
+    }
+
+    .btn-reject {
+      flex: 1;
+      background: #f44336;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 14px;
+      font-weight: 500;
+      text-align: center;
+      cursor: pointer;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+
+    .btn-reject:active {
+      background: #D32F2F;
+      transform: scale(0.98);
+    }
+
+    .history-link {
+      text-align: right;
+      margin-top: 16px;
+      padding: 0 0 20px 0;
+      background: #f5f5f5;
+    }
+
+    .history-link a {
+      color: #1e88ff;
+      text-decoration: none;
+      font-size: 14px;
+      display: inline-flex;
+      align-items: center;
+      font-weight: 500;
+      padding: 8px 0;
+    }
+
+    .history-link a:active {
+      opacity: 0.7;
+    }
+
+    .history-link i {
+      font-size: 18px;
+      margin-left: 4px;
+    }
+
+    /* Bottom Toolbar */
+    .app-toolbar {
+      background: white;
+      border-top: 1px solid #e0e0e0;
+      width: 100%;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+    }
+
+    .toolbar-inner {
+      display: flex;
+      justify-content: space-around;
+      padding: 8px 0;
+      width: 100%;
+    }
+
+    .toolbar-inner .link {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-decoration: none;
+      color: #666;
+      padding: 8px;
+      flex: 1;
+      min-width: 0;
+      transition: color 0.2s ease;
+    }
+
+    .toolbar-inner .link.active {
+      color: #1e88ff;
+    }
+
+    .toolbar-inner .link:active {
+      opacity: 0.7;
+    }
+
+    .toolbar-inner .link i {
+      font-size: 24px;
+      margin-bottom: 4px;
+    }
+
+    .tabbar-label {
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    /* View adjustment for bottom toolbar */
+    .view-main {
+      padding-bottom: 60px;
+      /* Space for bottom toolbar */
+    }
+
+    /* Material Icons in Buttons */
+    .btn-approve i,
+    .btn-reject i {
+      font-size: 20px;
+      margin-right: 8px;
+    }
+
+    /* Main content area */
+    .main-content {
+      width: 100%;
+    }
+
+    /* Individual approval item wrapper */
+    .approval-item {
+      width: 100%;
+      background: #f5f5f5;
+      margin-bottom: 12px;
+    }
+
+    /* Make sure everything aligns properly */
+    .page[data-name="home"] {
+      background: #f5f5f5;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app">
+    <!-- Top header with blue background -->
+    <header class="app-header">
+      <div class="app-header-inner">
+        <div class="app-title">SIMARSIP APP</div>
+        <div class="user-chip" onclick="window.location.href='profile.html'">
+          <span class="user-name">Halo, Kemahasiswaan!</span>
+          <i class="material-icons user-icon">account_circle</i>
+        </div>
+      </div>
+
+      <!-- Welcome Card - with same container padding -->
+      <div class="content-container">
+        <div class="welcome-card">
+          <div class="welcome-title">Selamat Datang!</div>
+          <div class="welcome-sub">Kelola proses persetujuan surat dengan mudah</div>
+        </div>
+      </div>
+    </header>
+
+    <div class="view view-main">
+      <div class="page" data-name="home">
+        <div class="page-content main-content">
+          <!-- Content Container for consistent padding -->
+          <div class="content-container">
+            <!-- Section Title -->
+            <div class="section-title">Permintaan Persetujuan Baru</div>
+
+            <!-- Approval Container -->
+            <div class="approval-container">
+              <!-- Approval Item 1 - Peminjaman Ruangan Ruang 112 -->
+              <div class="approval-item">
+                <div class="approval-card">
+                  <div class="approval-title">Peminjaman Ruangan - Ruang 112</div>
+                  <div class="approval-date">09/06/2025</div>
+
+                  <div class="btn-group">
+                    <button class="btn-approve">
+                      <i class="material-icons">check_circle</i> Setujui
+                    </button>
+                    <button class="btn-reject">
+                      <i class="material-icons">cancel</i> Tolak
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Approval Item 2 - Peminjaman Ruangan Ruang 110 -->
+              <div class="approval-item">
+                <div class="approval-card">
+                  <div class="approval-title">Peminjaman Ruangan - Ruang 110</div>
+                  <div class="approval-date">01/12/2025</div>
+
+                  <div class="btn-group">
+                    <button class="btn-approve">
+                      <i class="material-icons">check_circle</i> Setujui
+                    </button>
+                    <button class="btn-reject">
+                      <i class="material-icons">cancel</i> Tolak
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- History Link -->
+            <div class="history-link">
+              <a href="#">
+                Lihat Riwayat Persetujuan
+                <i class="material-icons">chevron_right</i>
+              </a>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom toolbar -->
+    <div class="toolbar toolbar-bottom app-toolbar">
+      <div class="toolbar-inner">
+        <a href="#" class="link active">
+          <i class="material-icons">home</i>
+          <span class="tabbar-label">Beranda</span>
+        </a>
+        <a href="#" class="link">
+          <i class="material-icons">calendar_today</i>
+          <span class="tabbar-label">Kalender</span>
+        </a>
+        <a href="#" class="link">
+          <i class="material-icons">notifications</i>
+          <span class="tabbar-label">Notifikasi</span>
+        </a>
+        <!-- <a href="#" class="link">
+          <i class="material-icons">help_outline</i>
+          <span class="tabbar-label">Bantuan</span>
+        </a> -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Framework7 JS -->
+  <script src="https://cdn.framework7.io/framework7/5.7.10/js/framework7.min.js"></script>
+  <script>
+    const app = new Framework7({
+      root: '#app',
+      name: 'SIMARSIP',
+      theme: 'auto',
+      touch: {
+        tapHold: true
+      }
+    });
+
+    // Add click handlers for buttons
+    document.addEventListener('DOMContentLoaded', function () {
+      // Approve buttons
+      document.querySelectorAll('.btn-approve').forEach(button => {
+        button.addEventListener('click', function () {
+          const card = this.closest('.approval-card');
+          const title = card.querySelector('.approval-title').textContent;
+
+          // Visual feedback
+          this.style.background = '#388E3C';
+          setTimeout(() => {
+            this.style.background = '#4CAF50';
+          }, 200);
+
+          alert(`Pengajuan "${title}" telah disetujui!`);
+        });
+      });
+
+      // Reject buttons
+      document.querySelectorAll('.btn-reject').forEach(button => {
+        button.addEventListener('click', function () {
+          const card = this.closest('.approval-card');
+          const title = card.querySelector('.approval-title').textContent;
+
+          // Visual feedback
+          this.style.background = '#D32F2F';
+          setTimeout(() => {
+            this.style.background = '#f44336';
+          }, 200);
+
+          alert(`Pengajuan "${title}" telah ditolak!`);
+        });
+      });
+
+      // Tab switching
+      document.querySelectorAll('.toolbar-inner .link').forEach(link => {
+        link.addEventListener('click', function (e) {
+          e.preventDefault();
+
+          // Don't do anything if already active
+          if (this.classList.contains('active')) return;
+
+          // Remove active class from all links
+          document.querySelectorAll('.toolbar-inner .link').forEach(l => {
+            l.classList.remove('active');
+          });
+
+          // Add active class to clicked link
+          this.classList.add('active');
+
+          // Visual feedback
+          this.style.opacity = '0.7';
+          setTimeout(() => {
+            this.style.opacity = '1';
+          }, 150);
+        });
+      });
+
+      // User chip click
+      document.querySelector('.user-chip').addEventListener('click', function () {
+        alert('Membuka profil Kaprodi');
+      });
+
+      // History link click
+      document.querySelector('.history-link a').addEventListener('click', function (e) {
+        e.preventDefault();
+        alert('Membuka riwayat persetujuan');
+      });
+    });
+  </script>
+</body>
+
+</html>

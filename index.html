@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <title>SIMARSIPP APP</title>
+    <link rel="stylesheet" href="https://cdn.framework7.io/framework7/5.7.10/css/framework7.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <div id="app">
+        <!-- Top header with blue background -->
+        <header class="app-header">
+            <div class="app-header-inner">
+                <div class="app-title">SIMARSIP APP</div>
+                <div class="user-chip" onclick="window.location.href='profile.html'">
+                    <span class="user-name">Halo, HMIF!</span>
+                    <i class="material-icons user-icon">account_circle</i>
+                </div>
+            </div>
+
+            <div class="welcome-card">
+                <div class="welcome-title">Selamat Datang!</div>
+                <div class="welcome-sub">Kelola pengajuan surat dan peminjaman dengan mudah</div>
+            </div>
+        </header>
+
+        <div class="view view-main">
+            <!-- HOME PAGE -->
+            <div class="page page-home" data-name="home">
+                <div class="page-content">
+
+                    <!-- <div class="search-wrapper">
+                        <div class="searchbar custom-searchbar">
+                            <div class="searchbar-inner">
+                                <div class="searchbar-input-wrap">
+                                    <i class="material-icons searchbar-icon">search</i>
+                                    <input type="search" placeholder="Cari pengajuan...">
+                                    <span class="input-clear-button"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div> -->
+
+                    <div class="section">
+                        <div class="section-title">Ajukan Surat Baru</div>
+                        <div class="row actions-row">
+                            <div class="col-33">
+                                <a href="peminjaman.html" style="text-decoration:none;color:inherit">
+                                    <div class="action-card">
+                                        <div class="action-icon"><i class="material-icons">format_list_bulleted</i>
+                                        </div>
+                                        <div class="action-label">Peminjaman Ruangan</div>
+                                    </div>
+                                </a>
+                            </div>
+                            <div class="col-33">
+                                <a href="dispensasi.html" style="text-decoration:none;color:inherit">
+                                    <div class="action-card">
+                                        <div class="action-icon"><i class="material-icons">description</i></div>
+                                        <div class="action-label">Surat Dispen</div>
+                                    </div>
+                                </a>
+                            </div>
+                            <div class="col-33">
+                                <a href="peralatan.html" style="text-decoration:none;color:inherit">
+                                    <div class="action-card">
+                                        <div class="action-icon"><i class="material-icons">important_devices</i></div>
+                                        <div class="action-label">Peminjaman Peralatan</div>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <div class="section-title">Status Pengajuan Terakhir</div>
+                        <div class="status-card">
+                            <div class="status-row">
+                                <div class="status-left">
+                                    <div class="status-title">Surat Dispensasi - Acara Makrab</div>
+                                    <div class="status-date">09/06/2025</div>
+                                </div>
+                                <div class="status-right">
+                                    <span class="badge color-green">Disetujui</span>
+                                </div>
+                            </div>
+                        </div>
+                        <a href="riwayat.html" class="history-link"
+                            style="display: inline-flex; align-items: center; justify-content: flex-end; width: 100%; text-decoration: none; color: #1e88ff; font-weight: 500; font-size: 14px; margin-top: 12px; padding: 8px 0;">
+                            Lihat Riwayat Pengajuan
+                            <i class="material-icons" style="margin-left: 4px; font-size: 18px;">chevron_right</i>
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- CALENDAR PAGE -->
+            <div class="page page-calendar" data-name="calendar" style="display:none">
+                <div class="page-content">
+                    <div class="calendar-header"
+                        style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+                        <button class="calendar-prev"
+                            style="background:transparent;border:none;font-size:20px;padding:4px">&#x2039;</button>
+                        <div class="calendar-title" style="font-weight:700">November 2025</div>
+                        <button class="calendar-next"
+                            style="background:transparent;border:none;font-size:20px;padding:4px">&#x203A;</button>
+                    </div>
+                    <div class="calendar-grid"
+                        style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:12px"></div>
+                    <div class="calendar-legend"
+                        style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:12px;font-size:12px">
+                        <div><span
+                                style="display:inline-block;width:12px;height:12px;background:#4CAF50;border-radius:2px;margin-right:6px"></span>
+                            Tersedia</div>
+                        <div><span
+                                style="display:inline-block;width:12px;height:12px;background:#FFC107;border-radius:2px;margin-right:6px"></span>
+                            Pending</div>
+                        <div><span
+                                style="display:inline-block;width:12px;height:12px;background:#2196F3;border-radius:2px;margin-right:6px"></span>
+                            Sedang dipinjam</div>
+                        <div><span
+                                style="display:inline-block;width:12px;height:12px;background:#9E9E9E;border-radius:2px;margin-right:6px"></span>
+                            Sudah dikembalikan</div>
+                    </div>
+                    <button class="calendar-fab" title="Tambah"
+                        style="position:fixed;bottom:70px;right:16px;width:56px;height:56px;border-radius:50%;background:#2196F3;color:white;border:none;font-size:24px;cursor:pointer;box-shadow:0 4px 6px rgba(0,0,0,0.3)">+</button>
+                </div>
+            </div>
+
+            <!-- PEMINJAMAN PAGE -->
+            <div class="page page-peminjaman" data-name="peminjaman" style="display:none">
+                <div class="page-content">
+                    <h2>Tambah Peminjaman</h2>
+                    <form class="booking-form">
+                        <div style="margin-bottom:12px">
+                            <label style="display:block;margin-bottom:4px;font-weight:500">Nama Kegiatan <span
+                                    style="color:red">*</span></label>
+                            <input type="text" name="title" placeholder="Contoh: Rapat Koordinasi" required
+                                style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;box-sizing:border-box">
+                        </div>
+                        <div style="margin-bottom:12px">
+                            <label style="display:block;margin-bottom:4px;font-weight:500">Jenis Ruangan <span
+                                    style="color:red">*</span></label>
+                            <select name="room" required
+                                style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;box-sizing:border-box">
+                                <option value="">Pilih ruangan</option>
+                                <option value="ruang_a">Ruang 111</option>
+                                <option value="ruang_b">Ruang 112</option>
+                                <option value="ruang_c">Ruang 113</option>
+                            </select>
+                        </div>
+                        <div style="margin-bottom:12px">
+                            <label style="display:block;margin-bottom:4px;font-weight:500">Tanggal <span
+                                    style="color:red">*</span></label>
+                            <input type="date" name="date" required
+                                style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;box-sizing:border-box">
+                        </div>
+                        <div style="margin-bottom:12px">
+                            <label style="display:block;margin-bottom:4px;font-weight:500">Jam Mulai</label>
+                            <input type="time" name="start"
+                                style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;box-sizing:border-box">
+                        </div>
+                        <div style="margin-bottom:12px">
+                            <label style="display:block;margin-bottom:4px;font-weight:500">Jam Selesai</label>
+                            <input type="time" name="end"
+                                style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;box-sizing:border-box">
+                        </div>
+                        <div style="margin-bottom:12px">
+                            <label style="display:block;margin-bottom:4px;font-weight:500">Catatan (opsional)</label>
+                            <textarea name="note" rows="3" placeholder="Keterangan tambahan..."
+                                style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;box-sizing:border-box;font-family:inherit"></textarea>
+                        </div>
+                        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
+                            <button type="button" class="booking-cancel"
+                                style="padding:8px 16px;background:#f0f0f0;border:1px solid #ddd;border-radius:4px;cursor:pointer">Batal</button>
+                            <button type="submit"
+                                style="padding:8px 16px;background:#2196F3;color:white;border:none;border-radius:4px;cursor:pointer;font-weight:500">Simpan</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom toolbar -->
+        <div class="toolbar toolbar-bottom app-toolbar">
+            <div class="toolbar-inner">
+                <a href="#" class="link active">
+                    <i class="material-icons">home</i>
+                    <span class="tabbar-label">Beranda</span>
+                </a>
+                <a href="calendar.html" class="link link-calendar">
+                    <i class="material-icons">calendar_today</i>
+                    <span class="tabbar-label">Kalender</span>
+                </a>
+                <a href="notifikasi.html" class="link">
+                    <i class="material-icons">notifications</i>
+                    <span class="tabbar-label">Notifikasi</span>
+                </a>
+                <!-- <a href="#" class="link">
+                    <i class="material-icons">help_outline</i>
+                    <span class="tabbar-label">Bantuan</span>
+                </a> -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Calendar moved to separate page: calendar.html -->
+    <script src="https://cdn.framework7.io/framework7/5.7.10/js/framework7.min.js"></script>
+    <script>
+        const app = new Framework7({
+            root: '#app',
+            name: 'SIMARSIP',
+            theme: 'auto',
+        });
+
+        document.addEventListener('DOMContentLoaded', function () {
+            // --- LOGIKA PENYESUAIAN ROLE ---
+            // Mengambil role dari localStorage (setelah login)
+            // Contoh: localStorage.setItem('userRole', 'BAA');
+            const userRole = localStorage.getItem('userRole') || 'BAA';
+            const userNameElement = document.querySelector('.user-name');
+            const homeLink = document.querySelector('.toolbar-inner .link[href*="index"]');
+
+            if (userRole === 'BAA') {
+                userNameElement.textContent = 'Halo, BAA!';
+                // Pastikan link beranda tetap ke halaman BAA
+                homeLink.setAttribute('href', 'index_baa.html');
+
+                // Tampilkan menu khusus BAA (Data Master)
+                document.getElementById('manage-rooms').style.display = 'block';
+                document.getElementById('manage-users').style.display = 'block';
+            } else {
+                userNameElement.textContent = 'Halo, Mahasiswa!';
+                // Arahkan beranda ke halaman utama mahasiswa
+                homeLink.setAttribute('href', 'index.html');
+
+                // Sembunyikan menu admin jika ini mahasiswa
+                const masterSection = document.querySelector('.section-title');
+                const masterContainer = document.querySelector('.master-data-container');
+                if (masterSection) masterSection.style.display = 'none';
+                if (masterContainer) masterContainer.style.display = 'none';
+            }
+
+            // --- EVENT HANDLERS ---
+
+            // Fix navigasi Bottom Toolbar agar tidak salah alamat
+            document.querySelectorAll('.toolbar-inner .link').forEach(link => {
+                link.addEventListener('click', function (e) {
+                    const targetHref = this.getAttribute('href');
+                    if (targetHref && targetHref !== '#') {
+                        window.location.href = targetHref;
+                    }
+                });
+            });
+
+            // Master Data Cards
+            const roomsCard = document.getElementById('manage-rooms');
+            if (roomsCard) {
+                roomsCard.addEventListener('click', () => alert('Membuka data ruangan...'));
+            }
+
+            // User chip click
+            document.querySelector('.user-chip').addEventListener('click', function () {
+                window.location.href = 'profile.html';
+            });
+        });
+    </script>
+</body>
+<script src="js/app.js"></script>
+
+</html>

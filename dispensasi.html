@@ -1,0 +1,188 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Surat Dispensasi - SIMARSIP</title>
+  <link rel="stylesheet" href="https://cdn.framework7.io/framework7/5.7.10/css/framework7.min.css">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    * { -webkit-tap-highlight-color: transparent; }
+    body { background: #f6fbff; }
+    .page-content { padding: 16px; padding-bottom: calc(60px + 16px); }
+    .form-row { margin-bottom: 16px; }
+    .form-label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: #333; }
+    .required-mark { color: #dc2626; font-weight: bold; }
+    input[type=text], input[type=time], input[type=date], textarea, select {
+      width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #dfeaf7; font-size: 14px; font-family: inherit;
+    }
+    textarea { resize: vertical; min-height: 80px; }
+    .file-info-text { color: #666; font-size: 12px; margin-top: 4px; display: block; }
+    #fileInfo { margin-top: 6px; font-size: 12px; font-weight: 500; color: #667eea; }
+    .error-message { color: #dc2626; font-size: 13px; min-height: 18px; margin-bottom: 12px; }
+    .actions { display: flex; gap: 8px; margin-top: 20px; }
+    .button { padding: 10px 16px; border-radius: 8px; border: none; font-size: 14px; font-weight: 500; cursor: pointer; flex: 1; }
+    .button-fill { background: #1e73ff; color: #fff; }
+    .button-secondary { background: #e0e0e0; color: #333; }
+    .button-fill:active { background: #1554cc; }
+  </style>
+</head>
+<body>
+  <header class="app-header" style="padding:12px 16px 18px 16px; border-bottom-left-radius:0;border-bottom-right-radius:0">
+    <div class="app-header-inner">
+      <div style="display:flex;align-items:center;gap:8px"><a href="index.html" style="color:#fff;text-decoration:none"><i class="material-icons">arrow_back</i></a><div style="font-weight:700;color:#fff">Surat Dispensasi</div></div>
+      <div></div>
+    </div>
+  </header>
+
+  <main class="page-content">
+    <div id="form-error" class="error-message"></div>
+    
+    <form id="dispensasi-form">
+      <!-- Nama Kegiatan -->
+      <div class="form-row">
+        <label class="form-label">Nama Kegiatan <span class="required-mark">*</span></label>
+        <input type="text" name="eventName" placeholder="Contoh: Mengikuti Lomba, Izin Sakit" required>
+      </div>
+
+      <!-- Mata Kuliah -->
+      <div class="form-row">
+        <label class="form-label">Mata Kuliah <span class="required-mark">*</span></label>
+        <input type="text" name="course" placeholder="Contoh: Pemrograman Web" required>
+      </div>
+
+      <!-- Nama Dosen -->
+      <div class="form-row">
+        <label class="form-label">Nama Dosen <span class="required-mark">*</span></label>
+        <input type="text" name="lecturer" placeholder="Contoh: Dr. Ahmad Wijaya" required>
+      </div>
+
+      <!-- Tanggal -->
+      <div class="form-row">
+        <label class="form-label">Tanggal <span class="required-mark">*</span></label>
+        <input type="date" name="date" required>
+      </div>
+
+      <!-- Catatan -->
+      <div class="form-row">
+        <label class="form-label">Catatan (Opsional)</label>
+        <textarea name="notes" placeholder="Keterangan tambahan (opsional)..."></textarea>
+      </div>
+
+      <!-- Upload Surat -->
+      <div class="form-row">
+        <label class="form-label">Unggah Surat Dispensasi <span class="required-mark">*</span></label>
+        <input type="file" name="letterFile" id="letterFile" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" required>
+        <small class="file-info-text">Format: PDF, DOC, DOCX, JPG, PNG (Max 5MB)</small>
+        <div id="fileInfo"></div>
+      </div>
+
+      <div class="actions">
+        <button type="button" id="cancel" class="button button-secondary">Batal</button>
+        <button type="submit" class="button button-fill">Kirim Pengajuan</button>
+      </div>
+    </form>
+  </main>
+
+  <script>
+    // Initialize Firebase v9+
+    var db;
+    var firebaseLoaded = false;
+    function loadFirebase(){
+      var script1 = document.createElement('script');
+      script1.src = 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js';
+      script1.onload = function(){
+        var script2 = document.createElement('script');
+        script2.src = 'https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js';
+        script2.onload = function(){
+          try{
+            if(!firebase.apps.length){
+              var firebaseConfig = {
+                apiKey: "AIzaSyBtyn-cjuhsnlEn-9Wao1tCcJfUQbf6GnY",
+                authDomain: "simarsip-apk.firebaseapp.com",
+                databaseURL: "https://simarsip-apk-default-rtdb.asia-southeast1.firebasedatabase.app",
+                projectId: "simarsip-apk",
+                storageBucket: "simarsip-apk.firebasestorage.app",
+                messagingSenderId: "707332524030",
+                appId: "1:707332524030:web:d91551b5f199df489622af"
+              };
+              firebase.initializeApp(firebaseConfig);
+              db = firebase.database();
+              firebaseLoaded = true;
+            }
+          }catch(err){ console.warn('Firebase init error:', err.message); }
+        };
+        document.head.appendChild(script2);
+      };
+      document.head.appendChild(script1);
+    }
+    loadFirebase();
+    
+    (function(){
+      var form = document.getElementById('dispensasi-form');
+      var fileInput = document.getElementById('letterFile');
+      var fileInfo = document.getElementById('fileInfo');
+      var errorDiv = document.getElementById('form-error');
+
+      // File info
+      fileInput.addEventListener('change', function(){
+        if(!this.files.length) { fileInfo.innerHTML = ''; return; }
+        var file = this.files[0];
+        var size = (file.size / 1024).toFixed(2);
+        if(file.size > 5242880){ 
+          fileInfo.innerHTML = '<span style="color:#dc2626">File terlalu besar (max 5MB)</span>'; 
+          return;
+        }
+        fileInfo.innerHTML = '✓ ' + file.name + ' (' + size + ' KB)';
+      });
+
+      document.getElementById('cancel').addEventListener('click', function(){ window.location.href = 'index.html'; });
+
+      form.addEventListener('submit', function(e){
+        e.preventDefault();
+        errorDiv.innerHTML = '';
+
+        var payload = {
+          type: 'dispensasi',
+          eventName: this.eventName.value,
+          course: this.course.value,
+          lecturer: this.lecturer.value,
+          date: this.date.value,
+          notes: this.notes.value || '',
+          status: 'pending',
+          createdAt: new Date().toISOString()
+        };
+        
+        if(!this.date.value){ errorDiv.innerHTML = 'Tanggal harus dipilih'; return; }
+        if(!fileInput.files.length){ errorDiv.innerHTML = 'Surat harus diunggah'; return; }
+
+        if(firebaseLoaded && db){
+          try{
+            var newRef = db.ref('pengajuan/dispensasi').push();
+            newRef.set(payload).then(function(){
+              alert('Pengajuan Dispensasi berhasil dikirim!');
+              window.location.href = 'index.html';
+            }).catch(function(err){
+              console.error(err); 
+              errorDiv.innerHTML = 'Gagal menyimpan ke Firebase: ' + err.message;
+            });
+            return;
+          }catch(err){ console.error('Firebase write error',err); }
+        }
+
+        // Fallback: localStorage
+        try{
+          var pengajuan = JSON.parse(localStorage.getItem('pengajuan')||'{}');
+          if(!pengajuan.dispensasi) pengajuan.dispensasi = [];
+          pengajuan.dispensasi.push(payload);
+          localStorage.setItem('pengajuan', JSON.stringify(pengajuan));
+        }catch(err){ console.error(err); }
+
+        alert('Pengajuan Dispensasi berhasil dikirim!');
+        window.location.href = 'index.html';
+      });
+    })();
+  </script>
+</body>
+</html>
