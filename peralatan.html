@@ -1,0 +1,230 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Peminjaman Peralatan - SIMARSIP</title>
+  <link rel="stylesheet" href="https://cdn.framework7.io/framework7/5.7.10/css/framework7.min.css">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    * { -webkit-tap-highlight-color: transparent; }
+    body { background: #f6fbff; }
+    .page-content { padding: 16px; padding-bottom: calc(60px + 16px); }
+    .form-row { margin-bottom: 16px; }
+    .form-label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: #333; }
+    .required-mark { color: #dc2626; font-weight: bold; }
+    input[type=text], input[type=time], input[type=date], input[type=number], textarea, select {
+      width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #dfeaf7; font-size: 14px; font-family: inherit;
+    }
+    textarea { resize: vertical; min-height: 80px; }
+    .file-info-text { color: #666; font-size: 12px; margin-top: 4px; display: block; }
+    #fileInfo { margin-top: 6px; font-size: 12px; font-weight: 500; color: #667eea; }
+    .error-message { color: #dc2626; font-size: 13px; min-height: 18px; margin-bottom: 12px; }
+    .actions { display: flex; gap: 8px; margin-top: 20px; }
+    .button { padding: 10px 16px; border-radius: 8px; border: none; font-size: 14px; font-weight: 500; cursor: pointer; flex: 1; }
+    .button-fill { background: #1e73ff; color: #fff; }
+    .button-secondary { background: #e0e0e0; color: #333; }
+    .button-fill:active { background: #1554cc; }
+  </style>
+</head>
+<body>
+  <header class="app-header">
+    <div class="app-header-inner">
+      <div style="display:flex;align-items:center;gap:8px"><a href="index.html" style="color:#fff;text-decoration:none"><i class="material-icons">arrow_back</i></a><div style="font-weight:700;color:#fff">Peminjaman Peralatan</div></div>
+      <div></div>
+    </div>
+  </header>
+
+  <main class="page-content">
+    <div id="form-error" class="error-message"></div>
+    <form id="add-equipment-form">
+      <div class="form-row">
+        <label class="form-label">Nama Kegiatan <span class="required-mark">*</span></label>
+        <input id="eventName" name="eventName" type="text" placeholder="Contoh: Workshop, Dokumentasi" required>
+      </div>
+
+      <div class="form-row">
+        <label class="form-label">Nama Peralatan <span class="required-mark">*</span></label>
+        <input id="equipmentName" name="equipmentName" type="text" placeholder="Contoh: Proyektor, Kamera, Sound System" required>
+      </div>
+
+      <div class="form-row">
+        <label class="form-label">Jumlah <span class="required-mark">*</span></label>
+        <input id="quantity" name="quantity" type="number" min="1" placeholder="Masukkan jumlah alat" required>
+      </div>
+
+      <div class="form-row">
+        <label class="form-label">Tanggal Peminjaman <span class="required-mark">*</span></label>
+        <input id="borrowDate" name="borrowDate" type="date" required>
+      </div>
+
+      <div class="form-row">
+        <label class="form-label">Catatan (Opsional)</label>
+        <textarea id="notes" name="notes" placeholder="Keterangan tambahan..."></textarea>
+      </div>
+
+      <div class="form-row">
+        <label class="form-label">Unggah Softfile Surat <span class="required-mark">*</span></label>
+        <input id="letterFile" name="letterFile" type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" required>
+        <small class="file-info-text">Format: PDF, DOC, DOCX, JPG, PNG (Max 5MB)</small>
+        <div id="fileInfo"></div>
+      </div>
+
+      <div class="actions">
+        <button type="button" id="cancel" class="button button-secondary">Batal</button>
+        <button type="submit" class="button button-fill">Ajukan Peminjaman</button>
+      </div>
+    </form>
+  </main>
+
+  <script src="https://cdn.framework7.io/framework7/5.7.10/js/framework7.min.js"></script>
+  <script>
+    // Setup cancel button immediately
+    document.addEventListener('DOMContentLoaded', function() {
+      var cancelBtn = document.getElementById('cancel');
+      if(cancelBtn) {
+        cancelBtn.addEventListener('click', function(e){ 
+          e.preventDefault();
+          window.location.href='index.html'; 
+        });
+      }
+    });
+
+    // prefill if selectedDate exists
+    (function(){
+      var input = document.getElementById('borrowDate');
+      var sel = localStorage.getItem('selectedDate');
+      if(sel) {
+        input.value = sel;
+        localStorage.removeItem('selectedDate'); // Clear after use
+      }
+
+      var fileInput = document.getElementById('letterFile');
+      var fileInfo = document.getElementById('fileInfo');
+      var form = document.getElementById('add-equipment-form');
+      var errorDiv = document.getElementById('form-error');
+
+      fileInput.addEventListener('change', function(){
+        if(!this.files.length){ fileInfo.innerHTML=''; return }
+        var f = this.files[0];
+        var sizeKB = (f.size/1024).toFixed(2);
+        if(f.size > 5242880){ fileInfo.innerHTML = '<span style="color:#dc2626">File terlalu besar (max 5MB)</span>'; return }
+        fileInfo.innerHTML = '✓ ' + f.name + ' ('+sizeKB+' KB)';
+      });
+
+      // Firebase init (compat)
+      var db; var firebaseLoaded = false;
+      (function loadFirebase(){
+        var s1 = document.createElement('script'); 
+        s1.src='https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js';
+        s1.onload = function(){ 
+          var s2=document.createElement('script'); 
+          s2.src='https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js'; 
+          s2.onload=function(){
+            try{
+              if(!firebase.apps.length){
+                var cfg = { apiKey: "AIzaSyBtyn-cjuhsnlEn-9Wao1tCcJfUQbf6GnY", authDomain: "simarsip-apk.firebaseapp.com", databaseURL: "https://simarsip-apk-default-rtdb.asia-southeast1.firebasedatabase.app", projectId: "simarsip-apk", storageBucket: "simarsip-apk.firebasestorage.app", messagingSenderId: "707332524030", appId: "1:707332524030:web:d91551b5f199df489622af" };
+                firebase.initializeApp(cfg); 
+                db = firebase.database(); 
+                firebaseLoaded = true;
+                console.log('Firebase loaded successfully');
+              }
+            }catch(err){ 
+              console.error('Firebase init error',err.message);
+              alert('Firebase init error: ' + err.message);
+            }
+          }; 
+          document.head.appendChild(s2) 
+        };
+        s1.onerror = function(){ console.error('Failed to load firebase-app'); };
+        document.head.appendChild(s1);
+      })();
+
+      form.addEventListener('submit', function(e){
+        e.preventDefault(); 
+        errorDiv.innerHTML='';
+
+        // Validasi input
+        if(!this.eventName.value){ errorDiv.innerHTML = 'Nama kegiatan harus diisi'; return; }
+        if(!this.equipmentName.value){ errorDiv.innerHTML = 'Nama peralatan harus diisi'; return; }
+        if(!this.quantity.value){ errorDiv.innerHTML = 'Jumlah harus diisi'; return; }
+        if(!this.borrowDate.value){ errorDiv.innerHTML = 'Tanggal harus dipilih'; return; }
+        if(!this.letterFile.files.length){ errorDiv.innerHTML = 'Surat harus diunggah'; return; }
+
+        var payload = {
+          type: 'peralatan',
+          eventName: this.eventName.value,
+          equipmentName: this.equipmentName.value,
+          quantity: this.quantity.value,
+          borrowDate: this.borrowDate.value,
+          notes: this.notes.value || '',
+          status: 'pending',
+          createdAt: new Date().toISOString()
+        };
+
+        // Jika Firebase belum loaded, tunggu sebentar
+        if(!firebaseLoaded){
+          errorDiv.innerHTML = 'Sedang memproses... mohon tunggu';
+          var waitCounter = 0;
+          var waitInterval = setInterval(function(){
+            waitCounter++;
+            if(firebaseLoaded && db){
+              clearInterval(waitInterval);
+              submitToFirebase(payload);
+            } else if(waitCounter > 30){ // 30 detik timeout
+              clearInterval(waitInterval);
+              errorDiv.innerHTML = 'Firebase tidak berhasil dimuat. Data disimpan offline.';
+              saveFallback(payload);
+            }
+          }, 1000);
+          return;
+        }
+
+        submitToFirebase(payload);
+      });
+
+      function submitToFirebase(payload){
+        if(!firebaseLoaded || !db){
+          errorDiv.innerHTML = 'Firebase tidak tersedia. Data disimpan offline.';
+          saveFallback(payload);
+          return;
+        }
+
+        try{
+          console.log('Submitting to Firebase:', payload);
+          var ref = db.ref('pengajuan/peralatan').push();
+          ref.set(payload).then(function(){ 
+            console.log('Data berhasil disimpan');
+            alert('✅ Peminjaman peralatan berhasil diajukan!'); 
+            setTimeout(function(){ window.location.href='index.html'; }, 500);
+          }).catch(function(err){ 
+            console.error('Firebase error:', err);
+            errorDiv.innerHTML='❌ Gagal menyimpan: '+err.message;
+            saveFallback(payload);
+          });
+        }catch(err){ 
+          console.error('Submit error:', err);
+          errorDiv.innerHTML='❌ Error: '+err.message;
+          saveFallback(payload);
+        }
+      }
+
+      function saveFallback(payload){
+        try{ 
+          var p = JSON.parse(localStorage.getItem('pengajuan')||'{}'); 
+          if(!p.peralatan) p.peralatan=[]; 
+          p.peralatan.push(payload); 
+          localStorage.setItem('pengajuan', JSON.stringify(p));
+          alert('⚠️ Data disimpan offline. Akan sinkronisasi saat online.');
+          setTimeout(function(){ window.location.href='index.html'; }, 1000);
+        }catch(err){ 
+          console.error('Fallback error:', err);
+          errorDiv.innerHTML='❌ Error: '+err.message;
+        }
+      }
+
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>Data Ruangan - BAA</title>
+    <link rel="stylesheet" href="https://cdn.framework7.io/framework7/5.7.10/css/framework7.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        body { background:#f4f7fb; font-family:-apple-system, sans-serif; margin:0; }
+        .app-header { background:#007aff; color:white; padding:15px; display:flex; align-items:center; gap:10px; position: sticky; top:0; z-index:100;}
+        
+        .search-container { padding: 10px 16px; background: white; border-bottom: 1px solid #eee; }
+        .search-input { width: 100%; border: none; background: #f0f0f0; padding: 10px; border-radius: 10px; outline: none; font-size: 14px; }
+        
+        .section { padding:16px; padding-bottom: 100px; }
+        
+        /* TAMPILAN KARTU DIPERLEBAR & DIPERBAGUS */
+        .room-card { 
+            background:white; border-radius:15px; padding:18px; margin-bottom:15px;
+            display:flex; justify-content:space-between; align-items:center;
+            box-shadow:0 4px 12px rgba(0,0,0,0.05); /* Shadow lebih lembut */
+        }
+        .room-info { flex: 1; }
+        .room-info h4 { margin:0; font-size:17px; color:#333; font-weight: 700; }
+        .room-info p { margin:4px 0 8px; font-size:12px; color:#777; line-height: 1.4; }
+        
+        .status-badge { padding: 5px 12px; border-radius: 8px; font-size: 11px; font-weight: 700; text-transform: uppercase; display: inline-block; }
+        .status-tersedia { background: #e8f5e9; color: #2e7d32; }
+        .status-dipinjam { background: #fff3e0; color: #ef6c00; }
+        .status-perbaikan { background: #ffebee; color: #c62828; }
+
+        .action-box { display: flex; align-items: center; gap: 15px; margin-left: 15px; }
+        .btn-mini-edit { color: #007aff; cursor: pointer; font-size: 24px; }
+        .btn-mini-delete { color: #ff3b30; cursor: pointer; font-size: 24px; }
+
+        .fab-add {
+            position: fixed; bottom: 30px; right: 20px;
+            width: 56px; height: 56px; background: #00eb9f;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            color: white; box-shadow: 0 4px 12px rgba(0,235,159,0.4);
+            cursor: pointer; z-index: 999;
+        }
+
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); display: none; z-index: 1000;
+            justify-content: center; align-items: center; padding: 15px;
+        }
+        .modal-content {
+            background: white; width: 95%; max-width: 400px;
+            border-radius: 20px; padding: 20px; box-sizing: border-box;
+        }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .modal-header h3 { margin: 0; font-size: 18px; font-weight: 800; }
+
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-size: 12px; font-weight: 700; color: #444; margin-bottom: 5px; }
+        .form-control {
+            width: 100%; border: 1px solid #e5e5e5; padding: 12px;
+            border-radius: 10px; font-size: 14px; box-sizing: border-box; outline: none;
+        }
+        .btn-save {
+            width: 100%; background: #007aff; color: white; border: none;
+            padding: 14px; border-radius: 10px; font-weight: 700; font-size: 15px; cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-header">
+        <i class="material-icons" style="cursor:pointer" onclick="window.location.href='index_baa.html'">arrow_back</i>
+        <div style="font-weight:700; font-size:18px;">Data Ruangan</div>
+    </div>
+
+    <div class="search-container">
+        <input type="text" id="searchInput" class="search-input" placeholder="Cari nama ruangan..." onkeyup="filterData()">
+    </div>
+
+    <div class="section" id="room-list"></div>
+
+    <div class="fab-add" onclick="openModal()">
+        <i class="material-icons">add</i>
+    </div>
+
+    <div class="modal-overlay" id="modalForm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Tambah Ruangan</h3>
+                <i class="material-icons" onclick="closeModal()" style="cursor:pointer; color:#bbb;">close</i>
+            </div>
+            
+            <input type="hidden" id="editId">
+            <div class="form-group">
+                <label>Nama Ruangan *</label>
+                <input type="text" id="formNama" class="form-control" placeholder="Ruang 112">
+            </div>
+            <div class="form-group">
+                <label>Kapasitas (orang) *</label>
+                <input type="number" id="formKapasitas" class="form-control" placeholder="50">
+            </div>
+            <div class="form-group">
+                <label>Lokasi *</label>
+                <input type="text" id="formLokasi" class="form-control" placeholder="Gedung A">
+            </div>
+            <div class="form-group">
+                <label>Fasilitas *</label>
+                <input type="text" id="formFasilitas" class="form-control" placeholder="AC, Proyektor, dll">
+            </div>
+            <div class="form-group">
+                <label>Status</label>
+                <select id="formStatus" class="form-control">
+                    <option value="Tersedia">Tersedia</option>
+                    <option value="Sedang Dipinjam">Sedang Dipinjam</option>
+                    <option value="Dalam Perbaikan">Dalam Perbaikan</option>
+                </select>
+            </div>
+            <button class="btn-save" id="btnSubmit" onclick="saveData()">Simpan Perubahan</button>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
+    <script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyBtyn-cjuhsnlEn-9Wao1tCcJfUQbf6GnY",
+        authDomain: "simarsip-apk.firebaseapp.com",
+        databaseURL: "https://simarsip-apk-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "simarsip-apk"
+    };
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const sharedDummyData = [
+        { id: 'dummy-6', type: 'ruangan', room: 'GSG', date: '2026-01-14', status: 'approved' }
+    ];
+
+    const ruanganNyata = [
+        { id: 'rn-1', nama: "Lab. Komputer", lokasi: "Lantai 1", kapasitas: "30", fasilitas: "PC, AC", statusMaster: "Tersedia" },
+        { id: 'rn-2', nama: "Ruang 101", lokasi: "Gedung A", kapasitas: "40", fasilitas: "AC, Proyektor", statusMaster: "Tersedia" },
+        { id: 'rn-3', nama: "Ruang 102", lokasi: "Gedung A", kapasitas: "40", fasilitas: "AC, Proyektor", statusMaster: "Tersedia" },
+        { id: 'rn-4', nama: "Ruang 103", lokasi: "Gedung A", kapasitas: "40", fasilitas: "AC, Proyektor", statusMaster: "Tersedia" },
+        { id: 'rn-5', nama: "Ruang 104", lokasi: "Gedung A", kapasitas: "40", fasilitas: "AC, Proyektor", statusMaster: "Tersedia" },
+        { id: 'rn-6', nama: "Ruang 105", lokasi: "Gedung A", kapasitas: "40", fasilitas: "AC, Proyektor", statusMaster: "Tersedia" },
+        { id: 'rn-7', nama: "Ruang 111", lokasi: "Gedung B", kapasitas: "50", fasilitas: "AC, Proyektor", statusMaster: "Tersedia" },
+        { id: 'rn-8', nama: "Ruang 112", lokasi: "Gedung B", kapasitas: "50", fasilitas: "AC, Proyektor", statusMaster: "Tersedia" },
+        { id: 'rn-9', nama: "Ruang 113", lokasi: "Gedung B", kapasitas: "50", fasilitas: "AC, Proyektor", statusMaster: "Tersedia" },
+        { id: 'rn-10', nama: "Ruang 114", lokasi: "Gedung B", kapasitas: "50", fasilitas: "AC, Proyektor", statusMaster: "Tersedia" },
+        { id: 'rn-11', nama: "Ruang 115", lokasi: "Gedung B", kapasitas: "50", fasilitas: "AC, Proyektor", statusMaster: "Tersedia" },
+        { id: 'rn-12', nama: "GSG", lokasi: "Lantai Dasar", kapasitas: "200", fasilitas: "Sound System, Kursi", statusMaster: "Tersedia" }
+    ];
+
+    let allRooms = [];
+    let currentUsage = []; 
+
+    function loadData() {
+        db.ref('pengajuan/ruangan').on('value', snapUsage => {
+            currentUsage = [];
+            snapUsage.forEach(child => { currentUsage.push(child.val()); });
+
+            db.ref('master_ruangan').on('value', snapMaster => {
+                const firebaseMaster = [];
+                snapMaster.forEach(child => { 
+                    firebaseMaster.push({ id: child.key, ...child.val(), statusMaster: child.val().status }); 
+                });
+                allRooms = [...ruanganNyata, ...firebaseMaster];
+                updateAndRender();
+            });
+        });
+    }
+
+    // --- PERBAIKAN LOGIKA STATUS DISINI ---
+    function updateAndRender() {
+        const today = "2026-01-14"; 
+        const allBookings = [...currentUsage, ...sharedDummyData];
+
+        const finalData = allRooms.map(room => {
+            // 1. Cek dulu apakah ada Status Manual (Sedang Dipinjam / Perbaikan) dari Database
+            if (room.statusMaster === "Dalam Perbaikan" || room.statusMaster === "Sedang Dipinjam") {
+                return { ...room, status: room.statusMaster };
+            }
+            
+            // 2. Jika status manualnya "Tersedia", baru cek sistem booking otomatis
+            const sedangDipakai = allBookings.find(b => 
+                (b.room || "").toLowerCase() === room.nama.toLowerCase() && b.date === today && b.status === 'approved'
+            );
+            
+            return { ...room, status: sedangDipakai ? "Sedang Dipinjam" : "Tersedia" };
+        });
+        render(finalData);
+    }
+
+    function render(data) {
+        const list = document.getElementById('room-list');
+        list.innerHTML = data.map(r => {
+            let sClass = 'status-tersedia';
+            if(r.status === 'Sedang Dipinjam') sClass = 'status-dipinjam';
+            if(r.status === 'Dalam Perbaikan') sClass = 'status-perbaikan';
+
+            const isNative = r.id.toString().startsWith('rn-');
+
+            return `
+                <div class="room-card">
+                    <div class="room-info">
+                        <h4>${r.nama}</h4>
+                        <p>${r.lokasi} • Kapasitas: ${r.kapasitas} orang<br>Fasilitas: ${r.fasilitas || '-'}</p>
+                        <span class="status-badge ${sClass}">${r.status}</span>
+                    </div>
+                    <div class="action-box">
+                        <i class="material-icons btn-mini-edit" onclick="openModal('${r.id}')">edit</i>
+                        ${!isNative ? `<i class="material-icons btn-mini-delete" onclick="deleteRuangan('${r.id}')">delete</i>` : ''}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function openModal(id = null) {
+        document.getElementById('modalForm').style.display = 'flex';
+        if(id && id !== "") {
+            const item = allRooms.find(i => i.id === id);
+            document.getElementById('modalTitle').innerText = "Edit Ruangan";
+            document.getElementById('btnSubmit').innerText = "Simpan Perubahan";
+            document.getElementById('editId').value = id;
+            document.getElementById('formNama').value = item.nama;
+            document.getElementById('formKapasitas').value = item.kapasitas;
+            document.getElementById('formLokasi').value = item.lokasi;
+            document.getElementById('formFasilitas').value = item.fasilitas || "";
+            document.getElementById('formStatus').value = item.statusMaster || "Tersedia";
+        } else {
+            document.getElementById('modalTitle').innerText = "Tambah Ruangan";
+            document.getElementById('btnSubmit').innerText = "Tambah Ruangan";
+            document.getElementById('editId').value = "";
+            document.getElementById('formNama').value = "";
+            document.getElementById('formKapasitas').value = "";
+            document.getElementById('formLokasi').value = "";
+            document.getElementById('formFasilitas').value = "";
+            document.getElementById('formStatus').value = "Tersedia";
+        }
+    }
+
+    function closeModal() { document.getElementById('modalForm').style.display = 'none'; }
+
+    function saveData() {
+        const id = document.getElementById('editId').value;
+        const payload = {
+            nama: document.getElementById('formNama').value,
+            kapasitas: document.getElementById('formKapasitas').value,
+            lokasi: document.getElementById('formLokasi').value,
+            fasilitas: document.getElementById('formFasilitas').value,
+            status: document.getElementById('formStatus').value
+        };
+
+        if(!payload.nama) return alert("Nama wajib diisi!");
+
+        if(id) {
+            // Berlaku untuk rn- (data nyata) maupun id firebase (input baru)
+            db.ref('master_ruangan').child(id).set(payload).then(() => { 
+                alert("Data berhasil diperbarui!"); 
+                closeModal(); 
+            });
+        } else {
+            db.ref('master_ruangan').push(payload).then(() => { 
+                alert("Ruangan ditambahkan!"); 
+                closeModal(); 
+            });
+        }
+    }
+
+    function deleteRuangan(id) {
+        if(confirm("Hapus ruangan ini?")) db.ref('master_ruangan').child(id).remove();
+    }
+
+    function filterData() {
+        const val = document.getElementById('searchInput').value.toLowerCase();
+        const filtered = allRooms.filter(r => r.nama.toLowerCase().includes(val));
+        
+        // Memasukkan logika status ke hasil filter agar badge tetap sinkron
+        const today = "2026-01-14";
+        const allBookings = [...currentUsage, ...sharedDummyData];
+        const finalData = filtered.map(room => {
+            if (room.statusMaster === "Dalam Perbaikan" || room.statusMaster === "Sedang Dipinjam") {
+                return { ...room, status: room.statusMaster };
+            }
+            const sedangDipakai = allBookings.find(b => 
+                (b.room || "").toLowerCase() === room.nama.toLowerCase() && b.date === today && b.status === 'approved'
+            );
+            return { ...room, status: sedangDipakai ? "Sedang Dipinjam" : "Tersedia" };
+        });
+        render(finalData);
+    }
+
+    loadData();
+    </script>
+</body>
+</html>

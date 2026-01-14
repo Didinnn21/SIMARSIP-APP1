@@ -1,0 +1,354 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Tambah Peminjaman</title>
+  <link rel="stylesheet" href="https://cdn.framework7.io/framework7/5.7.10/css/framework7.min.css">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    * { -webkit-tap-highlight-color: transparent; }
+    body { background: #f6fbff; }
+    .page-content { padding: 16px; }
+    .form-row { margin-bottom: 16px; }
+    .form-label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: #333; }
+    .required-mark { color: #dc2626; font-weight: bold; }
+    input[type=text], input[type=time], input[type=date], textarea, select {
+      width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #dfeaf7; font-size: 14px; font-family: inherit;
+    }
+    textarea { resize: vertical; min-height: 80px; }
+    .file-info-text { color: #666; font-size: 12px; margin-top: 4px; display: block; }
+    #fileInfo { margin-top: 6px; font-size: 12px; font-weight: 500; color: #667eea; }
+    .error-message { color: #dc2626; font-size: 13px; min-height: 18px; margin-bottom: 12px; }
+    .actions { display: flex; gap: 8px; margin-top: 20px; }
+    .button { padding: 10px 16px; border-radius: 8px; border: none; font-size: 14px; font-weight: 500; cursor: pointer; flex: 1; }
+    .button-fill { background: #1e73ff; color: #fff; }
+    .button-secondary { background: #e0e0e0; color: #333; }
+    .button-fill:active { background: #1554cc; }
+    .duration-info { color: #667eea; font-size: 12px; margin-top: 4px; font-weight: 500; }
+    .duration-info { 
+      background: #f0f4ff; 
+      padding: 8px 10px; 
+      border-radius: 6px; 
+      margin-top: 6px; 
+      color: #0052cc; 
+      font-size: 13px; 
+      font-weight: 500; 
+      border-left: 3px solid #0052cc;
+    }
+    .date-range-info {
+      background: #fff8e1;
+      padding: 10px 12px;
+      border-radius: 6px;
+      margin-top: 6px;
+      color: #f57f17;
+      font-size: 14px;
+      font-weight: 600;
+      border-left: 3px solid #f57f17;
+      display: block;
+      min-height: 20px;
+    }
+  </style>
+</head>
+<body>
+  <header class="app-header" style="padding:12px 16px 18px 16px; border-bottom-left-radius:0;border-bottom-right-radius:0">
+    <div class="app-header-inner">
+      <div style="display:flex;align-items:center;gap:8px"><a href="index.html" style="color:#fff;text-decoration:none"><i class="material-icons">arrow_back</i></a><div style="font-weight:700;color:#fff">Peminjaman Ruangan</div></div>
+      <div></div>
+    </div>
+  </header>
+
+  <main class="page-content">
+    <div id="form-error" class="error-message"></div>
+    
+    <form id="booking">
+      <!-- Nama Kegiatan -->
+      <div class="form-row">
+        <label class="form-label">Nama Kegiatan <span class="required-mark">*</span></label>
+        <input type="text" name="title" placeholder="Contoh: Rapat Koordinasi, Workshop" required>
+      </div>
+
+      <!-- Jenis Ruangan -->
+      <div class="form-row">
+        <label class="form-label">Jenis Ruangan <span class="required-mark">*</span></label>
+        <select name="room" required>
+          <option value="">Pilih Jenis Ruangan</option>
+          <option value="Lab. Komputer">Lab. Komputer</option>
+          <option value="Ruang 101">Ruang 101</option>
+          <option value="Ruang 102">Ruang 102</option>
+          <option value="Ruang 103">Ruang 103</option>
+          <option value="Ruang 104">Ruang 104</option>
+          <option value="Ruang 105">Ruang 105</option>
+          <option value="Ruang 111">Ruang 111</option>
+          <option value="Ruang 112">Ruang 112</option>
+          <option value="Ruang 113">Ruang 113</option>
+          <option value="Ruang 114">Ruang 114</option>
+          <option value="Ruang 115">Ruang 115</option>
+          <option value="GSG">GSG</option>
+        </select>
+      </div>
+
+      <!-- Durasi Peminjaman -->
+      <div class="form-row">
+        <label class="form-label">Durasi Peminjaman (Hari) <span class="required-mark">*</span></label>
+        <select name="duration" required>
+          <option value="">Pilih Durasi</option>
+          <option value="1">1 Hari</option>
+          <option value="2">2 Hari</option>
+          <option value="3">3 Hari</option>
+          <option value="5">5 Hari</option>
+          <option value="7">1 Minggu</option>
+          <option value="14">2 Minggu</option>
+          <option value="30">1 Bulan</option>
+        </select>
+        <div id="durationInfo" class="duration-info"></div>
+      </div>
+
+      <!-- Tanggal Peminjaman -->
+      <div class="form-row">
+        <label class="form-label">Tanggal Peminjaman <span class="required-mark">*</span></label>
+        <input type="date" name="date" id="date-input" required>
+        <small class="file-info-text">Tanggal awal peminjaman.</small>
+        <div id="dateRangeInfo" class="date-range-info"></div>
+      </div>
+
+      <!-- Jam Mulai Acara -->
+      <div class="form-row">
+        <label class="form-label">Jam Mulai Acara <span class="required-mark">*</span></label>
+        <input type="time" name="start" required>
+      </div>
+
+      <!-- Jam Selesai Acara -->
+      <div class="form-row">
+        <label class="form-label">Jam Selesai Acara <span class="required-mark">*</span></label>
+        <input type="time" name="end" required>
+      </div>
+
+      <!-- Catatan -->
+      <div class="form-row">
+        <label class="form-label">Catatan (Opsional)</label>
+        <textarea name="note" placeholder="Keterangan atau kebutuhan khusus..."></textarea>
+      </div>
+
+      <!-- Upload Surat -->
+      <div class="form-row">
+        <label class="form-label">Unggah Softfile Surat <span class="required-mark">*</span></label>
+        <input type="file" name="letterFile" id="letterFile" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" required>
+        <small class="file-info-text">Format: PDF, DOC, DOCX, JPG, PNG (Max 5MB)</small>
+        <div id="fileInfo"></div>
+      </div>
+
+      <div class="actions">
+        <button type="button" id="cancel" class="button button-secondary">Batal</button>
+        <button type="submit" class="button button-fill">Simpan</button>
+      </div>
+    </form>
+  </main>
+
+  <script src="https://cdn.framework7.io/framework7/5.7.10/js/framework7.min.js"></script>
+  <script>
+    // Initialize Firebase v9+
+    var db;
+    var firebaseLoaded = false;
+    function loadFirebase(){
+      var script1 = document.createElement('script');
+      script1.src = 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js';
+      script1.onload = function(){
+        var script2 = document.createElement('script');
+        script2.src = 'https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js';
+        script2.onload = function(){
+          try{
+            if(!firebase.apps.length){
+              var firebaseConfig = {
+                apiKey: "AIzaSyBtyn-cjuhsnlEn-9Wao1tCcJfUQbf6GnY",
+                authDomain: "simarsip-apk.firebaseapp.com",
+                databaseURL: "https://simarsip-apk-default-rtdb.asia-southeast1.firebasedatabase.app",
+                projectId: "simarsip-apk",
+                storageBucket: "simarsip-apk.firebasestorage.app",
+                messagingSenderId: "707332524030",
+                appId: "1:707332524030:web:d91551b5f199df489622af"
+              };
+              firebase.initializeApp(firebaseConfig);
+              db = firebase.database();
+              firebaseLoaded = true;
+              console.log('Firebase loaded successfully');
+            }
+          }catch(err){ 
+            console.error('Firebase init error:', err.message); 
+            alert('Firebase init error: ' + err.message);
+          }
+        };
+        document.head.appendChild(script2);
+      };
+      script1.onerror = function(){ console.error('Failed to load firebase-app'); };
+      document.head.appendChild(script1);
+    }
+    loadFirebase();
+    
+    // Setup cancel button immediately
+    document.addEventListener('DOMContentLoaded', function() {
+      var cancelBtn = document.getElementById('cancel');
+      if(cancelBtn) {
+        cancelBtn.addEventListener('click', function(e){ 
+          e.preventDefault();
+          window.location.href = 'index.html'; 
+        });
+      }
+    });
+    
+    (function(){
+      var form = document.getElementById('booking');
+      var dateInput = document.getElementById('date-input');
+      var durationSelect = form.duration;
+      var durationInfo = document.getElementById('durationInfo');
+      var dateRangeInfo = document.getElementById('dateRangeInfo');
+      var fileInput = document.getElementById('letterFile');
+      var fileInfo = document.getElementById('fileInfo');
+      var errorDiv = document.getElementById('form-error');
+
+      // Pre-fill date from calendar selection
+      var sel = localStorage.getItem('selectedDate');
+      if(sel){ dateInput.value = sel; }
+
+      // Duration info display - durasi dihitung sebagai jumlah hari
+      function updateDurationInfo(){
+        if(!dateInput.value || !durationSelect.value) { 
+          durationInfo.innerHTML = ''; 
+          dateRangeInfo.innerHTML = '';
+          return; 
+        }
+        var duration = parseInt(durationSelect.value);
+        
+        // Parse tanggal dari format yyyy-mm-dd
+        var dateParts = dateInput.value.split('-');
+        var year = parseInt(dateParts[0]);
+        var month = parseInt(dateParts[1]) - 1;
+        var day = parseInt(dateParts[2]);
+        
+        var startDate = new Date(year, month, day);
+        
+        // Tanggal akhir = tanggal awal + (durasi - 1) hari
+        var endDate = new Date(startDate);
+        endDate.setDate(endDate.getDate() + duration - 1);
+        
+        var endStr = endDate.toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric'});
+        var startStr = startDate.toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric'});
+        durationInfo.innerHTML = '📅 <strong>Periode Peminjaman:</strong><br>' + startStr + ' <strong>s/d</strong> ' + endStr;
+        
+        // Tampilkan range tanggal sederhana (angka saja)
+        var startDay = startDate.getDate();
+        var endDay = endDate.getDate();
+        var dateRangeText = duration === 1 ? 'Tanggal: ' + startDay : 'Tanggal: ' + startDay + ' sampai ' + endDay;
+        dateRangeInfo.innerHTML = '📌 ' + dateRangeText;
+      }
+
+      dateInput.addEventListener('change', updateDurationInfo);
+      durationSelect.addEventListener('change', updateDurationInfo);
+      
+      // Trigger update saat page load jika ada data
+      updateDurationInfo();
+
+      // File info
+      fileInput.addEventListener('change', function(){
+        if(!this.files.length) { fileInfo.innerHTML = ''; return; }
+        var file = this.files[0];
+        var size = (file.size / 1024).toFixed(2);
+        if(file.size > 5242880){ 
+          fileInfo.innerHTML = '<span style="color:#dc2626">File terlalu besar (max 5MB)</span>'; 
+          return;
+        }
+        fileInfo.innerHTML = '✓ ' + file.name + ' (' + size + ' KB)';
+      });
+
+      form.addEventListener('submit', function(e){
+        e.preventDefault();
+        errorDiv.innerHTML = '';
+
+        // Validasi input
+        if(!this.title.value){ errorDiv.innerHTML = 'Nama kegiatan harus diisi'; return; }
+        if(!this.room.value){ errorDiv.innerHTML = 'Jenis ruangan harus dipilih'; return; }
+        if(!this.date.value){ errorDiv.innerHTML = 'Tanggal harus dipilih'; return; }
+        if(!this.duration.value){ errorDiv.innerHTML = 'Durasi harus dipilih'; return; }
+        if(!this.start.value){ errorDiv.innerHTML = 'Jam mulai harus diisi'; return; }
+        if(!this.end.value){ errorDiv.innerHTML = 'Jam selesai harus diisi'; return; }
+        if(!fileInput.files.length){ errorDiv.innerHTML = 'Surat harus diunggah'; return; }
+
+        var payload = {
+          type: 'ruangan',
+          title: this.title.value,
+          room: this.room.value,
+          duration: this.duration.value,
+          start: this.start.value,
+          end: this.end.value,
+          note: this.note.value || '',
+          date: this.date.value,
+          status: 'pending',
+          createdAt: new Date().toISOString()
+        };
+
+        // Jika Firebase belum loaded, tunggu sebentar
+        if(!firebaseLoaded){
+          errorDiv.innerHTML = 'Sedang memproses... mohon tunggu';
+          var waitCounter = 0;
+          var waitInterval = setInterval(function(){
+            waitCounter++;
+            if(firebaseLoaded && db){
+              clearInterval(waitInterval);
+              submitToFirebase(payload);
+            } else if(waitCounter > 30){ // 30 detik timeout
+              clearInterval(waitInterval);
+              errorDiv.innerHTML = 'Firebase tidak berhasil dimuat. Data disimpan offline.';
+              saveFallback(payload);
+            }
+          }, 1000);
+          return;
+        }
+
+        submitToFirebase(payload);
+      });
+
+      function submitToFirebase(payload){
+        if(!firebaseLoaded || !db){
+          errorDiv.innerHTML = 'Firebase tidak tersedia. Data disimpan offline.';
+          saveFallback(payload);
+          return;
+        }
+
+        try{
+          console.log('Submitting to Firebase:', payload);
+          var newRef = db.ref('pengajuan/ruangan').push();
+          newRef.set(payload).then(function(){
+            console.log('Data berhasil disimpan');
+            localStorage.removeItem('selectedDate');
+            alert('✅ Pengajuan peminjaman ruangan berhasil dikirim!');
+            setTimeout(function(){ window.location.href = 'index.html'; }, 500);
+          }).catch(function(err){
+            console.error('Firebase error:', err); 
+            errorDiv.innerHTML = '❌ Gagal menyimpan ke Firebase: ' + err.message;
+            saveFallback(payload);
+          });
+        }catch(err){ 
+          console.error('Submit error:', err);
+          errorDiv.innerHTML = '❌ Error: ' + err.message;
+          saveFallback(payload);
+        }
+      }
+
+      function saveFallback(payload){
+        try{
+          var peng = JSON.parse(localStorage.getItem('pengajuan')||'{}');
+          if(!peng.ruangan) peng.ruangan = [];
+          peng.ruangan.push(payload);
+          localStorage.setItem('pengajuan', JSON.stringify(peng));
+          alert('⚠️ Data disimpan offline. Akan sinkronisasi saat online.');
+          setTimeout(function(){ window.location.href = 'index.html'; }, 1000);
+        }catch(err){ 
+          console.error('Fallback error:', err);
+          errorDiv.innerHTML = '❌ Error: ' + err.message;
+        }
+      }
+    })();
+  </script>
+</body>
+</html>

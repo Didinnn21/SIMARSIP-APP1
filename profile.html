@@ -1,0 +1,168 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Profil - SIMARSIP</title>
+
+  <link rel="stylesheet" href="https://cdn.framework7.io/framework7/5.7.10/css/framework7.min.css">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+  <style>
+    body {
+      background: #f4f4f4;
+      margin: 0 auto;
+      max-width: 480px;
+      font-family: -apple-system, Roboto, sans-serif;
+    }
+
+    .app-header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 16px;
+      color: white;
+      font-size: 18px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 150;
+    }
+
+    /* Efek klik tombol back */
+    .back-btn {
+      color: white;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      transition: opacity 0.2s;
+    }
+    .back-btn:active { opacity: 0.5; }
+
+    .profile-card {
+      background: white;
+      margin: 20px;
+      padding: 20px;
+      border-radius: 20px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+      text-align: center;
+    }
+
+    .profile-img {
+      width: 90px;
+      height: 90px;
+      border-radius: 50%;
+      background: #ddd;
+      object-fit: cover;
+      margin-bottom: 12px;
+      border: 3px solid #eee;
+    }
+
+    .profile-name { font-size: 20px; font-weight: 700; color: #333; }
+    .profile-email { font-size: 14px; color: #777; margin-bottom: 5px; }
+
+    .logout-btn {
+      margin: 20px;
+      padding: 14px;
+      width: calc(100% - 40px);
+      background: linear-gradient(135deg, #ff7676 0%, #ff4d4d 100%);
+      border: none;
+      border-radius: 14px;
+      color: white;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    .logout-btn:active { transform: scale(0.98); }
+  </style>
+</head>
+
+<body>
+
+  <header class="app-header">
+    <a href="javascript:void(0)" onclick="goBack()" class="back-btn">
+      <i class="material-icons" style="font-size:26px">arrow_back</i>
+    </a>
+    Profil Saya
+  </header>
+
+  <div class="profile-card">
+    <img src="img/user.png" class="profile-img" id="profilePicture">
+    <div class="profile-name" id="profileName">Loading...</div>
+    <div class="profile-email" id="profileEmail">...</div>
+  </div>
+
+  <div class="card" style="margin: 15px; border-radius:18px;">
+    <div class="card-content" style="padding: 18px;">
+      <div style="display:flex; justify-content: space-between; align-items:center; gap:20px; flex-wrap:wrap;">
+        
+        <div style="display:flex; align-items:center; gap:10px;">
+          <i class="material-icons" style="color:#667eea;">badge</i>
+          <span style="font-weight:600;">Role:</span>
+          <span id="profileRole" style="background:#e0e7ff; color:#4338ca; padding:6px 14px; border-radius:12px; font-size:13px; font-weight:600;">
+            -
+          </span>
+        </div>
+
+        <div style="display:flex; align-items:center; gap:10px;">
+          <i class="material-icons" style="color:#667eea;">supervisor_account</i>
+          <span style="font-weight:600;">Jabatan:</span>
+          <span id="profileJabatan" style="background:#dbeafe; color:#1e40af; padding:6px 14px; border-radius:12px; font-size:13px; font-weight:600;">
+            -
+          </span>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <button class="logout-btn" onclick="logoutUser()">
+    Keluar
+  </button>
+
+  <script>
+    // 1. Ambil data dari LocalStorage
+    const loggedUser = JSON.parse(localStorage.getItem("loggedUser"));
+
+    // Proteksi Halaman
+    if (!loggedUser) {
+      window.location.href = "login.html";
+    } else {
+      // 2. Tampilkan Data
+      document.getElementById("profileName").textContent = loggedUser.name || "User";
+      document.getElementById("profileEmail").textContent = loggedUser.email || "-";
+      document.getElementById("profileRole").textContent = loggedUser.role || "-";
+      document.getElementById("profileJabatan").textContent = loggedUser.jabatan || "-";
+
+      if (loggedUser.photo && loggedUser.photo !== "") {
+        document.getElementById("profilePicture").src = loggedUser.photo;
+      }
+    }
+
+    // 3. Fungsi Kembali Dinamis (KUNCI PERBAIKAN)
+    function goBack() {
+      if (!loggedUser) {
+        window.location.href = "login.html";
+        return;
+      }
+
+      // Jika role adalah BAA, balik ke index_baa.html
+      // Jika role adalah HMIF, balik ke index.html
+      if (loggedUser.role === "BAA") {
+        window.location.href = "index_baa.html";
+      } else {
+        window.location.href = "index.html"; 
+      }
+    }
+
+    // 4. Logout
+    function logoutUser() {
+      localStorage.removeItem("loggedUser");
+      window.location.href = "login.html";
+    }
+  </script>
+
+</body>
+</html>

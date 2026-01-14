@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>Arsip Surat - BAA</title>
+    <link rel="stylesheet" href="https://cdn.framework7.io/framework7/5.7.10/css/framework7.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        body { background:#f4f7fb; font-family:-apple-system, sans-serif; margin:0; }
+        .app-header { background:#007aff; color:white; padding:15px; display:flex; align-items:center; gap:10px; }
+        .search-container { padding:10px 16px; background:white; }
+        .search-input { width:100%; border:none; background:#f0f0f0; padding:12px; border-radius:10px; outline:none;}
+        .section { padding:16px; }
+        .archive-card { background:white; border-radius:12px; padding:15px; margin-bottom:10px; box-shadow:0 2px 5px rgba(0,0,0,0.05); position:relative; }
+        .status-tag { position:absolute; top:15px; right:15px; padding:4px 8px; border-radius:6px; font-size:9px; font-weight:800; }
+        .tag-approved { background:#e8f5e9; color:#4caf50; }
+        .tag-rejected { background:#ffebee; color:#f44336; }
+    </style>
+</head>
+<body>
+    <div class="app-header">
+        <i class="material-icons" onclick="window.location.href='index_baa.html'">arrow_back</i>
+        <div style="font-weight:700; font-size:18px;">Arsip Persuratan</div>
+    </div>
+
+    <div class="search-container">
+        <input type="text" id="searchArsip" class="search-input" placeholder="Cari judul surat atau kegiatan..." onkeyup="filterArsip()">
+    </div>
+
+    <div class="section" id="archive-list">
+        <p style="text-align:center; color:#aaa;">Memuat arsip...</p>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBtyn-cjuhsnlEn-9Wao1tCcJfUQbf6GnY",
+            authDomain: "simarsip-apk.firebaseapp.com",
+            databaseURL: "https://simarsip-apk-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "simarsip-apk"
+        };
+
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const db = firebase.database();
+        
+        let allArchives = [];
+const dummyArsip = [
+    { title: "Peminjaman Aula Utama", status: "approved", date: "2026-01-10", type: "RUANGAN" },
+    { title: "Dispensasi Lomba Robotik", status: "rejected", date: "2026-01-12", type: "DISPENSASI" },
+    { title: "Seminar Nasional Teknologi", status: "approved", date: "2026-01-17", type: "RUANGAN" },
+    { title: "Workshop UI/UX Design", status: "approved", date: "2026-01-08", type: "PERALATAN" },
+    { title: "Rapat Koordinasi Ormawa", status: "rejected", date: "2026-01-09", type: "RUANGAN" },
+    { title: "Pengajuan Dana Hibah", status: "approved", date: "2026-01-11", type: "LAINNYA" },
+    { title: "Lomba E-Sport Kampus", status: "rejected", date: "2026-01-13", type: "RUANGAN" }
+];
+
+        db.ref('pengajuan').on('value', snap => {
+            const fbArsip = [];
+            const data = snap.val();
+            if(data) {
+                Object.keys(data).forEach(cat => {
+                    Object.keys(data[cat]).forEach(id => {
+                        const item = data[cat][id];
+                        if(item.status !== 'pending') fbArsip.push({ ...item, type: cat.toUpperCase() });
+                    });
+                });
+            }
+            allArchives = [...dummyArsip, ...fbArsip];
+            renderArsip(allArchives);
+        });
+
+        function renderArsip(data) {
+            const wrap = document.getElementById('archive-list');
+            if (data.length === 0) {
+                wrap.innerHTML = '<p style="text-align:center; color:#aaa;">Arsip tidak ditemukan.</p>';
+                return;
+            }
+            wrap.innerHTML = data.map(a => `
+                <div class="archive-card">
+                    <span class="status-tag ${a.status==='approved'?'tag-approved':'tag-rejected'}">${a.status.toUpperCase()}</span>
+                    <h4 style="margin:0">${a.title || a.namaKegiatan || 'Tanpa Judul'}</h4>
+                    <small style="color:#999">${a.type} • Tgl: ${a.date}</small>
+                </div>
+            `).join('');
+        }
+
+        function filterArsip() {
+            const val = document.getElementById('searchArsip').value.toLowerCase();
+            const filtered = allArchives.filter(a => (a.title || a.namaKegiatan || '').toLowerCase().includes(val));
+            renderArsip(filtered);
+        }
+    </script>
+</body>
+</html>

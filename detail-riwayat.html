@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detail Pengajuan</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/framework7@7/framework7-bundle.min.css">
+    <style>
+        body { background: #f1f4f9; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        .page-header { background: #0a73ff; color: white; padding: 15px; font-size: 18px; display: flex; align-items: center; gap: 10px; }
+        .page-content { padding: 16px; }
+        .detail-card { background: white; border-radius: 12px; box-shadow: 0 3px 5px rgba(0,0,0,0.1); overflow: hidden; }
+        .detail-header { padding: 15px; border-bottom: 1px solid #e5e5e5; }
+        .detail-title { font-size: 18px; font-weight: 600; margin: 0; }
+        .detail-status { padding: 3px 10px; border-radius: 20px; font-size: 12px; float: right; margin-top: 2px; }
+        .disetujui { background: #c9f7cd; color: #1f8b2e; }
+        .menunggu { background: #ffe8a3; color: #a17400; }
+        .ditolak { background: #ffd0d0; color: #b00000; }
+        .detail-body { padding: 15px; }
+        .detail-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px; gap: 10px; }
+        .detail-item:last-child { border-bottom: none; }
+        .detail-item-label { font-weight: 500; color: #555; min-width: 120px; }
+        .detail-item-value { color: #111; text-align: right; flex: 1; word-break: break-word; }
+        .empty-state { text-align: center; color: #888; margin-top: 50px; }
+    </style>
+</head>
+<body>
+
+    <div class="page-header">
+        <span onclick="history.back()" style="cursor:pointer;">⬅</span>
+        Detail Riwayat
+    </div>
+
+    <div class="page-content" id="detail-container">
+        <div class="empty-state">Memuat detail...</div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
+
+    <script>
+        // ========= SHARED DUMMY DATA (Sesuai Ruangan Nyata) ==========
+        const sharedDummyData = [
+    { id: 'dummy-1', type: 'ruangan', title: 'Rapat BEM', room: 'Ruang 101', date: '2026-01-05', status: 'approved', createdAt: new Date('2026-01-10T10:00:00Z').toISOString(), note: 'Rapat persiapan acara tahunan.' },
+    { id: 'dummy-2', type: 'peralatan', title: 'Peminjaman Proyektor', equipmentName: 'Proyektor Epson', quantity: 1, date: '2026-01-27', status: 'pending', createdAt: new Date('2026-01-18T14:00:00Z').toISOString(), note: 'Untuk presentasi kelas.' },
+    { id: 'dummy-3', type: 'dispensasi', title: 'Dispensasi Lomba', purpose: 'Lomba Debat Nasional', date: '2026-01-22', status: 'rejected', createdAt: new Date('2026-01-19T11:00:00Z').toISOString(), reason: 'Surat keterangan dari panitia tidak lengkap.' },
+    { id: 'dummy-4', type: 'ruangan', title: 'Workshop Fotografi', room: 'Lab. Komputer', date: '2026-01-25', status: 'approved', createdAt: new Date('2026-01-20T09:00:00Z').toISOString(), note: 'Dibutuhkan akses ke 5 unit PC.' },
+    { id: 'dummy-5', type: 'peralatan', title: 'Peminjaman Kamera', equipmentName: 'Kamera DSLR Canon', quantity: 2, date: '2026-01-28', status: 'pending', createdAt: new Date('2026-01-27T16:00:00Z').toISOString(), note: 'Untuk dokumentasi acara.' },
+    { id: 'dummy-6', type: 'ruangan', title: 'Dekoraasi HMIF', room: 'GSG', date: '2026-01-14', status: 'approved', createdAt: new Date('2026-01-10T10:00:00Z').toISOString(), note: 'Persiapan untuk acara nanti.' },
+];
+
+        // ========= FIREBASE INITIALIZATION ==========
+        let db;
+        try {
+            const firebaseConfig = {
+                apiKey: "AIzaSyBtyn-cjuhsnlEn-9Wao1tCcJfUQbf6GnY",
+                authDomain: "simarsip-apk.firebaseapp.com",
+                databaseURL: "https://simarsip-apk-default-rtdb.asia-southeast1.firebasedatabase.app",
+                projectId: "simarsip-apk",
+                storageBucket: "simarsip-apk.firebasestorage.app",
+                messagingSenderId: "707332524030",
+                appId: "1:707332524030:web:d91551b5f199df489622af"
+            };
+            if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+            db = firebase.database();
+        } catch (err) {
+            console.error('Firebase init error:', err.message);
+        }
+
+        function renderDetails(item) {
+            const container = document.getElementById('detail-container');
+            if (!item) {
+                container.innerHTML = '<div class="empty-state">Data tidak ditemukan.</div>';
+                return;
+            }
+
+            let statusClass = "", statusText = "";
+            switch (item.status) {
+                case "approved": statusClass = "disetujui"; statusText = "DISETUJUI"; break;
+                case "pending": statusClass = "menunggu"; statusText = "MENUNGGU"; break;
+                case "rejected": statusClass = "ditolak"; statusText = "DITOLAK"; break;
+                default: statusClass = "menunggu"; statusText = "MENUNGGU";
+            }
+            
+            // Format judul jika tidak ada
+            const displayTitle = item.title || (item.type === 'ruangan' ? `Peminjaman ${item.room}` : 'Pengajuan Detail');
+
+            const detailsMap = {
+                'ID Pengajuan': item.id || '-',
+                'Jenis': item.type.toUpperCase(),
+                'Tanggal Pengajuan': new Date(item.createdAt || item.date).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }),
+                'Tanggal Acara': new Date(item.date).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }),
+            };
+
+            // Menampilkan data sesuai kategori agar sinkron dengan inputan Firebase
+            if (item.type === 'ruangan') {
+                detailsMap['Nama Ruangan'] = item.room || '-';
+                detailsMap['Lokasi'] = item.lokasi || 'Gedung Terkait';
+                detailsMap['Catatan/Keterangan'] = item.note || '-';
+            } else if (item.type === 'peralatan') {
+                detailsMap['Alat'] = item.equipmentName || '-';
+                detailsMap['Jumlah'] = item.quantity || '1';
+                detailsMap['Catatan'] = item.note || '-';
+            } else if (item.type === 'dispensasi') {
+                detailsMap['Keperluan'] = item.purpose || '-';
+                detailsMap['Alasan Penolakan'] = item.reason || '-';
+            }
+
+            let detailsHTML = '';
+            for (const [label, value] of Object.entries(detailsMap)) {
+                detailsHTML += `
+                    <div class="detail-item">
+                        <span class="detail-item-label">${label}</span>
+                        <span class="detail-item-value">${value}</span>
+                    </div>`;
+            }
+
+            container.innerHTML = `
+                <div class="detail-card">
+                    <div class="detail-header">
+                        <span class="detail-status ${statusClass}">${statusText}</span>
+                        <h2 class="detail-title">${displayTitle}</h2>
+                    </div>
+                    <div class="detail-body">
+                        ${detailsHTML}
+                    </div>
+                </div>
+            `;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            const itemId = params.get('id');
+
+            if (!itemId) {
+                renderDetails(null);
+                return;
+            }
+
+            if (itemId.startsWith('dummy-')) {
+                const dummyItem = sharedDummyData.find(item => item.id === itemId);
+                renderDetails(dummyItem);
+            } else {
+                if (!db) return;
+                
+                // Pisahkan ID kategori dan key Firebase (contoh: ruangan-KXy123)
+                const parts = itemId.split('-');
+                const category = parts[0];
+                const key = parts.slice(1).join('-');
+
+                db.ref(`pengajuan/${category}/${key}`).on('value', (snapshot) => {
+                    const item = snapshot.val();
+                    if (item) {
+                        item.type = category;
+                        item.id = key;
+                        renderDetails(item);
+                    } else {
+                        renderDetails(null);
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

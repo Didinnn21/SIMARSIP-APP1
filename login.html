@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>Login SIMARSIP - Final</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <link rel="stylesheet" href="framework7/framework7-bundle.min.css">
+
+  <style>
+    body {
+      background: linear-gradient(180deg, #443e94 0%, #7d33b8 100%);
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      overflow: hidden;
+    }
+
+    .login-card {
+      width: 100%;
+      max-width: 400px;
+      background: white;
+      padding: 40px 30px;
+      border-radius: 20px;
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.25);
+      text-align: center;
+    }
+
+    .logo-container {
+      margin-bottom: 30px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .login-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: #333;
+      margin-bottom: 3px;
+    }
+
+    .login-sub {
+      font-size: 12px;
+      color: #777;
+      margin: 0;
+      font-weight: 400;
+    }
+
+    .section-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #333;
+      text-align: left;
+      margin-bottom: 15px;
+      margin-top: 5px;
+    }
+
+    .list {
+      margin: 0;
+    }
+
+    .list ul {
+      list-style: none;
+      padding-left: 0;
+      margin-left: 0;
+    }
+
+    .item-content {
+      padding-left: 0;
+      margin-bottom: 15px;
+    }
+
+    .item-inner {
+      padding-right: 0;
+    }
+
+    .item-label {
+      font-weight: 500;
+      color: #333;
+      font-size: 14px;
+      margin-bottom: 8px;
+      display: block;
+      text-align: left;
+    }
+
+    .item-input-wrap {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 0 10px;
+      background-color: #f9f9f9;
+      transition: border-color 0.3s ease;
+    }
+
+    .item-input-wrap input:focus {
+      outline: none;
+    }
+
+    .item-input-wrap input {
+      border: none;
+      padding: 10px 0;
+      width: 100%;
+      box-shadow: none;
+      font-size: 15px;
+      background-color: transparent;
+    }
+
+    .item-input-wrap:focus-within {
+      border-color: #5e60ce;
+      box-shadow: 0 0 0 1px #5e60ce;
+    }
+
+    .btn-login {
+      width: 100%;
+      background: linear-gradient(90deg, #6c5ce7, #a29bfe);
+      color: white;
+      padding: 14px;
+      border-radius: 50px;
+      font-weight: 600;
+      font-size: 16px;
+      border: none;
+      margin-top: 25px;
+      cursor: pointer;
+      transition: transform 0.2s;
+      box-shadow: 0 10px 20px rgba(108, 92, 231, 0.4);
+    }
+
+    .btn-login:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 12px 25px rgba(108, 92, 231, 0.6);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="login-card">
+    <div class="logo-container">
+      <div class="login-title">SIMARSIP</div>
+      <div class="login-sub">Sistem Manajemen Peminjaman</div>
+    </div>
+
+    <div class="section-title">Masuk</div>
+
+    <div class="list no-hairlines custom-form">
+      <ul>
+        <li>
+          <div class="item-content item-input">
+            <div class="item-inner">
+              <label class="item-label">Email/Username</label>
+              <div class="item-input-wrap">
+                <input type="text" id="email" placeholder="Masukkan email atau username" />
+              </div>
+            </div>
+          </div>
+        </li>
+
+        <li>
+          <div class="item-content item-input">
+            <div class="item-inner">
+              <label class="item-label">Password</label>
+              <div class="item-input-wrap">
+                <input type="password" id="password" placeholder="Masukkan password" />
+              </div>
+            </div>
+          </div>
+        </li>
+
+        <li id="jabatanRow" style="display:none;">
+          <label class="item-label">Jabatan</label>
+          <div class="item-input-wrap">
+            <select id="jabatanSelect" style="width:100%; padding:10px; border:none; background:#f9f9f9;">
+              <option value="">Pilih Jabatan</option>
+              <option value="Ketua">Ketua</option>
+              <option value="Wakil Ketua">Wakil Ketua</option>
+              <option value="Sekretaris">Sekretaris</option>
+              <option value="Bendahara">Bendahara</option>
+              <option value="Koordinator Acara">Koordinator Acara</option>
+              <option value="Koordinator Inventaris">Koordinator Inventaris</option>
+              <option value="Anggota">Anggota</option>
+            </select>
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <button class="btn-login" onclick="login()">Masuk</button>
+  </div>
+
+  <script src="framework7/framework7-bundle.min.js"></script>
+
+  <script>
+    const users = [
+    {
+      email: "hmif@example.com",
+      password: "hmif123",
+      role: "HMIF",
+      name: "Ketua HMIF", 
+      photo: "img/user.png",
+      redirect: "index.html",
+      needJabatan: true
+    },
+    {
+      email: "baa@example.com",
+      password: "baa123",
+      role: "BAA",
+      name: "Biro Administrasi Akademik",
+      photo: "img/user.png",
+      redirect: "index_baa.html",
+      needJabatan: false
+    },
+    {
+      email: "kaprodi@example.com",
+      password: "kaprodi123",
+      role: "Kaprodi",
+      name: "Kaprodi TI",
+      photo: "img/user.png",
+      redirect: "index_kaprodi.html",
+      needJabatan: false
+    }
+  ];
+
+  // ==================================================
+  // 1. TAMPILKAN DROPDOWN JIKA EMAIL = HMIF
+  // ==================================================
+  document.getElementById("email").addEventListener("input", function () {
+    const email = this.value.toLowerCase();
+    // Cek apakah email yang diketik adalah milik user yang butuh jabatan (HMIF)
+    const needsJabatanUser = users.find(u => u.email === email && u.needJabatan);
+
+    if (needsJabatanUser) {
+      document.getElementById("jabatanRow").style.display = "block";
+    } else {
+      document.getElementById("jabatanRow").style.display = "none";
+    }
+  });
+
+  // ==================================================
+  // 2. LOGIN FUNCTION
+  // ==================================================
+  function login() {
+    const emailInput = document.getElementById("email").value.trim();
+    const passwordInput = document.getElementById("password").value;
+    const jabatanSelect = document.getElementById("jabatanSelect").value;
+
+    const account = users.find(u => u.email.toLowerCase() === emailInput.toLowerCase());
+
+    // Validasi Dasar
+    if (!emailInput || !passwordInput) {
+      alert("Email dan password wajib diisi.");
+      return;
+    }
+
+    // Cek Akun & Password
+    if (!account || account.password !== passwordInput) {
+      alert("Email atau password salah!");
+      return;
+    }
+
+    // Jika role HMIF, wajib pilih jabatan
+    if (account.needJabatan && jabatanSelect === "") {
+      alert("Silakan pilih jabatan HMIF.");
+      return;
+    }
+
+    // SIMPAN DATA LENGKAP KE LOCALSTORAGE
+    // Penting: Data ini yang akan dibaca oleh profile.html
+    const dataToSave = {
+      email: account.email,
+      role: account.role,
+      name: account.name,
+      photo: account.photo,
+      // Jika BAA, jabatan diambil dari jabatan default. Jika HMIF, dari dropdown.
+      jabatan: account.needJabatan ? jabatanSelect : (account.role === "BAA" ? "Admin BAA" : account.role)
+    };
+
+    localStorage.setItem("loggedUser", JSON.stringify(dataToSave));
+
+    // Redirect sesuai file tujuan masing-masing
+    window.location.href = account.redirect;
+  }
+
+  // ==================================================
+  // 3. AUTO REDIRECT (Jika sudah login)
+  // ==================================================
+  const alreadyLogin = JSON.parse(localStorage.getItem("loggedUser"));
+  if (alreadyLogin) {
+    const match = users.find(u => u.email === alreadyLogin.email);
+    if (match) {
+      window.location.href = match.redirect;
+    }
+  }
+</script>

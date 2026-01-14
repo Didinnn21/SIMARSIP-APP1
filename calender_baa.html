@@ -1,0 +1,298 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+  <title>Kalender BAA - SIMARSIP</title>
+  <link rel="stylesheet" href="https://cdn.framework7.io/framework7/5.7.10/css/framework7.min.css">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  
+  <style>
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body { 
+      margin: 0; padding: 0; 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+      background: #f4f7fb;
+      max-width: 480px; margin-left: auto; margin-right: auto;
+    }
+    
+    /* Header Gradient dengan judul "Kalender" */
+    .app-header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 15px 16px; color: white;
+      display: flex; align-items: center; justify-content: flex-start;
+      position: sticky; top: 0; z-index: 100;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      height: 60px;
+    }
+    .app-header-title { font-weight: 700; font-size: 18px; margin: 0; }
+
+    .page { padding: 16px 12px; padding-bottom: 100px; }
+
+    .calendar-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    #title { font-weight: 700; font-size: 18px; color: #333; text-align: center; flex: 1; }
+    .nav-btn { background: transparent; border: none; font-size: 20px; color: #667eea; cursor: pointer; padding: 0 10px; }
+
+    #grid {
+      display: grid; grid-template-columns: repeat(7, 1fr);
+      gap: 8px; padding: 12px; background: white;
+      border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      margin-bottom: 20px;
+    }
+    #grid .day {
+      aspect-ratio: 1; display: flex; flex-direction: column;
+      justify-content: center; align-items: center;
+      font-size: 12px; font-weight: 600; border-radius: 12px;
+      cursor: pointer; background: #f5f5f5; color: #666; transition: 0.2s;
+    }
+    .day-header { background: transparent !important; color: #6b7a95 !important; font-weight: 700 !important; cursor: default !important; }
+
+    /* Warna Status Sesuai Legenda */
+    #grid .day.available { background: #a8e6cf; color: #2d5016; }
+    #grid .day.pending { background: #ffd3b6; color: #8b4513; }
+    #grid .day.borrowed { background: #ffaaa5; color: #6b0000; }
+    #grid .day.returned { background: #aa96da; color: #3d1a5f; }
+    #grid .day.selected-day { outline: 2px solid #667eea; outline-offset: 2px; transform: scale(1.05); }
+
+    .calendar-legend {
+      background: white; padding: 12px; border-radius: 16px;
+      display: grid; grid-template-columns: repeat(2, 1fr);
+      gap: 12px; font-size: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    .legend-item { display: flex; align-items: center; gap: 8px; color: #666; }
+    .legend-box { width: 16px; height: 16px; border-radius: 6px; flex-shrink: 0; }
+    .legend-box.available { background: #a8e6cf; }
+    .legend-box.pending { background: #ffd3b6; }
+    .legend-box.borrowed { background: #ffaaa5; }
+    .legend-box.returned { background: #aa96da; }
+
+    /* Modal Info Lengkap */
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6); z-index: 2000; 
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none; transition: 0.3s;
+    }
+    .modal-overlay.visible { opacity: 1; pointer-events: auto; }
+    .modal-content {
+      background: white; padding: 20px; border-radius: 20px;
+      width: 340px; max-width: 90%; box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+    .modal-header { font-weight: 800; font-size: 17px; border-bottom: 1px solid #eee; padding-bottom: 12px; margin-bottom: 15px; text-align: center;}
+    
+    .booking-item { padding: 12px 0; border-bottom: 1px solid #f5f5f5; }
+    .booking-item:last-child { border-bottom: none; }
+    .booking-item strong { display: block; font-size: 15px; margin-bottom: 5px; color: #764ba2; }
+    .booking-item .detail-row { display: flex; font-size: 13px; margin-bottom: 3px; }
+    .booking-item .label { color: #888; width: 70px; flex-shrink: 0; }
+    .booking-item .value { color: #333; font-weight: 600; }
+
+    .modal-footer { display: flex; gap: 10px; margin-top: 20px; }
+    .modal-footer button { flex: 1; padding: 12px; border-radius: 12px; border: none; font-weight: 700; font-size: 14px; cursor: pointer; transition: 0.2s; }
+    .modal-footer button:active { opacity: 0.7; }
+    .btn-selesai { background: #aa96da; color: white; }
+    .btn-tutup { background: #f0f0f0; color: #444; }
+
+    /* TOOLBAR PERBAIKAN: Berjajar horizontal sesuai gambar */
+    .custom-toolbar {
+        position: fixed; bottom: 0; left: 0; right: 0; height: 65px;
+        background: white; display: flex; flex-direction: row; 
+        justify-content: space-around; align-items: center; 
+        border-top: 1px solid #eee; z-index: 1000;
+    }
+    .tab-link { 
+        display: flex; flex-direction: column; align-items: center; 
+        justify-content: center; text-decoration: none; color: #999; 
+        flex: 1; height: 100%;
+    }
+    .tab-link.active { color: #007aff; }
+    .tab-link i { font-size: 24px; margin-bottom: 2px; }
+    .tab-link span { font-size: 11px; font-weight: 500; }
+  </style>
+</head>
+<body>
+
+  <header class="app-header">
+    <div class="app-header-title">Kalender</div>
+  </header>
+
+  <main class="page">
+    <div class="calendar-header">
+      <button id="prev" class="nav-btn">&#x2039;</button>
+      <div id="title">...</div>
+      <button id="next" class="nav-btn">&#x203A;</button>
+    </div>
+
+    <div id="grid"></div>
+
+    <div class="calendar-legend">
+      <div class="legend-item"><span class="legend-box available"></span> Tersedia</div>
+      <div class="legend-item"><span class="legend-box pending"></span> Pending</div>
+      <div class="legend-item"><span class="legend-box borrowed"></span> Sedang dipinjam</div>
+      <div class="legend-item"><span class="legend-box returned"></span> Sudah dikembalikan</div>
+    </div>
+  </main>
+
+  <div id="infoModal" class="modal-overlay">
+    <div class="modal-content">
+        <div id="modalHeader" class="modal-header">Info Tanggal</div>
+        <div id="modalBody"></div>
+        <div class="modal-footer" id="modalFooter"></div>
+    </div>
+  </div>
+
+  <nav class="custom-toolbar">
+    <a href="index_baa.html" class="tab-link">
+      <i class="material-icons">home</i>
+      <span>Beranda</span>
+    </a>
+    <a href="calender_baa.html" class="tab-link active">
+      <i class="material-icons">calendar_today</i>
+      <span>Kalender</span>
+    </a>
+    <a href="notifikasi_baa.html" class="tab-link">
+      <i class="material-icons">notifications</i>
+      <span>Notifikasi</span>
+    </a>
+  </nav>
+
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
+
+  <script>
+    (function(){
+        const grid = document.getElementById('grid');
+        const title = document.getElementById('title');
+        const infoModal = document.getElementById('infoModal');
+        const modalBody = document.getElementById('modalBody');
+        const modalHeader = document.getElementById('modalHeader');
+        const modalFooter = document.getElementById('modalFooter');
+
+        let current = new Date();
+        let firebaseData = {};
+        const monthNames = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+        
+        let sharedDummyData = [
+            { id: 'd1', title: 'Rapat BEM', room: 'Aula', date: '2026-01-05', status: 'approved', note: 'Persiapan acara Dies Natalis.' },
+            { id: 'd2', title: 'Peminjaman Proyektor', equipmentName: 'Proyektor Epson', date: '2026-01-27', status: 'pending', note: 'Untuk mata kuliah Pemrograman Web.' },
+            { id: 'd3', title: 'Peminjaman Kamera', equipmentName: 'Kamera DSLR', date: '2026-01-28', status: 'pending', note: 'Dokumentasi kunjungan industri.' }
+        ];
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBtyn-cjuhsnlEn-9Wao1tCcJfUQbf6GnY",
+            authDomain: "simarsip-apk.firebaseapp.com",
+            databaseURL: "https://simarsip-apk-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "simarsip-apk"
+        };
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        db.ref('pengajuan').on('value', snap => {
+            const data = snap.val() || {};
+            firebaseData = {}; 
+            Object.keys(data).forEach(type => {
+                Object.keys(data[type]).forEach(key => {
+                    const item = data[type][key];
+                    if(item.date) {
+                        if(!firebaseData[item.date]) firebaseData[item.date] = [];
+                        firebaseData[item.date].push({ ...item, key: key, type: type });
+                    }
+                });
+            });
+            render(current);
+        });
+
+        function render(date){
+            grid.innerHTML='';
+            const year = date.getFullYear();
+            const month = date.getMonth();
+            title.textContent = monthNames[month] + ' ' + year;
+
+            ['Min','Sen','Sel','Rab','Kam','Jum','Sab'].forEach(w => {
+                let h = document.createElement('div'); h.className='day day-header'; h.textContent=w; grid.appendChild(h);
+            });
+
+            const firstDay = new Date(year, month, 1).getDay();
+            const lastDate = new Date(year, month + 1, 0).getDate();
+
+            for(let i=0; i<firstDay; i++){
+                let e = document.createElement('div'); e.className='day'; grid.appendChild(e);
+            }
+
+            for(let d=1; d<=lastDate; d++){
+                const ymd = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+                const allItems = [...(firebaseData[ymd] || []), ...sharedDummyData.filter(i => i.date === ymd)];
+                
+                let statusClass = 'available';
+                if(allItems.length > 0) {
+                    const hasPending = allItems.some(b => b.status === 'pending');
+                    const hasApproved = allItems.some(b => b.status === 'approved');
+                    const hasReturned = allItems.some(b => b.status === 'Sudah dikembalikan');
+                    
+                    if (hasPending) statusClass = 'pending';
+                    else if (hasApproved) statusClass = 'borrowed';
+                    else if (hasReturned) statusClass = 'returned';
+                }
+
+                const cell = document.createElement('div');
+                cell.className = `day ${statusClass}`;
+                cell.innerHTML = `<strong>${d}</strong>`;
+                cell.onclick = () => { if(allItems.length > 0) showPopUp(ymd, allItems); };
+                grid.appendChild(cell);
+            }
+        }
+
+        function showPopUp(date, list) {
+            const dateParts = date.split('-');
+            modalHeader.textContent = `Info ${dateParts[2]} ${monthNames[parseInt(dateParts[1])-1]}`;
+            
+            modalBody.innerHTML = list.map(item => {
+                const s = item.status || 'N/A';
+                const sColor = s === 'approved' ? 'red' : (s === 'Sudah dikembalikan' ? 'purple' : 'orange');
+                const detailLabel = item.room ? 'Ruangan' : 'Alat';
+                const detailValue = item.room || item.equipmentName || '-';
+
+                return `
+                <div class="booking-item">
+                    <strong>${item.title}</strong>
+                    <div class="detail-row"><div class="label">${detailLabel}</div><div class="value">: ${detailValue}</div></div>
+                    <div class="detail-row"><div class="label">Status</div><div class="value" style="color:${sColor}">: ${s.toUpperCase()}</div></div>
+                    <div class="detail-row"><div class="label">Catatan</div><div class="value">: ${item.note || item.reason || '-'}</div></div>
+                </div>`;
+            }).join('');
+
+            const approvedItem = list.find(item => item.status === 'approved');
+            if (approvedItem) {
+                modalFooter.innerHTML = `
+                    <button class="btn-selesai" onclick="prosesSelesai('${approvedItem.type || 'dummy'}', '${approvedItem.key || approvedItem.id}')">Selesai</button>
+                    <button class="btn-tutup" onclick="closePopup()">Tutup</button>
+                `;
+            } else {
+                modalFooter.innerHTML = `<button class="btn-tutup" style="width:100%" onclick="closePopup()">Tutup</button>`;
+            }
+            infoModal.classList.add('visible');
+        }
+
+        window.prosesSelesai = (type, id) => {
+            if (!confirm("Konfirmasi pengembalian kunci/alat?")) return;
+            if (type === 'dummy') {
+                const idx = sharedDummyData.findIndex(d => d.id === id);
+                if (idx !== -1) sharedDummyData[idx].status = 'Sudah dikembalikan';
+                render(current);
+                closePopup();
+            } else {
+                db.ref(`pengajuan/${type}`).child(id).update({ status: 'Sudah dikembalikan' })
+                .then(() => { closePopup(); });
+            }
+        };
+
+        window.closePopup = () => infoModal.classList.remove('visible');
+        document.getElementById('prev').onclick = () => { current.setMonth(current.getMonth()-1); render(current); };
+        document.getElementById('next').onclick = () => { current.setMonth(current.getMonth()+1); render(current); };
+    })();
+  </script>
+</body>
+</html>

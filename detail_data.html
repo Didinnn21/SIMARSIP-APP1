@@ -1,0 +1,198 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Detail Pengajuan - BAA</title>
+  <link rel="stylesheet" href="https://cdn.framework7.io/framework7/5.7.10/css/framework7.min.css">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <style>
+    body { background: #f4f7fb; margin: 0 auto; max-width: 480px; font-family: -apple-system, sans-serif; }
+    
+    .app-header {
+      background: linear-gradient(135deg, #007aff 0%, #005bb5 100%);
+      padding: 16px; color: white; display: flex; align-items: center; gap: 12px;
+    }
+    .back-btn { cursor: pointer; display: flex; align-items: center; }
+
+    .page-content { padding: 20px 16px; padding-bottom: 100px; }
+
+    /* Detail Card */
+    .detail-card {
+      background: white; border-radius: 20px; padding: 20px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px;
+    }
+    .detail-label { font-size: 11px; color: #888; font-weight: 700; text-transform: uppercase; margin-bottom: 4px; }
+    .detail-value { font-size: 15px; color: #333; font-weight: 600; margin-bottom: 18px; line-height: 1.4; }
+    .detail-value:last-child { margin-bottom: 0; }
+
+    /* Badge Status */
+    .status-pill {
+      display: inline-block; padding: 6px 16px; border-radius: 50px;
+      font-size: 12px; font-weight: 800; text-transform: uppercase; margin-bottom: 20px;
+    }
+    .status-pending { background: #fff3e0; color: #ff9800; }
+    .status-approved { background: #e0f9f1; color: #00c082; }
+    .status-rejected { background: #ffebee; color: #ff4b5c; }
+
+    /* Footer Action */
+    .fixed-footer {
+      position: fixed; bottom: 0; left: 0; right: 0; max-width: 480px; margin: 0 auto;
+      background: white; padding: 16px; display: flex; gap: 10px;
+      border-top: 1px solid #eee; z-index: 100;
+    }
+    .btn-footer {
+      flex: 1; padding: 14px; border-radius: 12px; border: none;
+      font-weight: 800; font-size: 14px; cursor: pointer;
+    }
+    .btn-approve { background: #00eb9f; color: white; }
+    .btn-reject { background: #ff4b5c; color: white; }
+  </style>
+</head>
+<body>
+
+  <header class="app-header">
+    <div class="back-btn" onclick="window.history.back()">
+      <i class="material-icons">arrow_back</i>
+    </div>
+    <div style="font-weight:700; font-size:18px;">Detail Data</div>
+  </header>
+
+  <main class="page-content">
+    <div id="status-area"></div>
+    
+    <div class="detail-card" id="detail-content">
+      <div style="text-align: center; padding: 20px; color: #999;">Memuat detail...</div>
+    </div>
+  </main>
+
+  <div class="fixed-footer" id="footer-action" style="display: none;">
+    <button class="btn-footer btn-reject" id="btnReject">Tolak</button>
+    <button class="btn-footer btn-approve" id="btnApprove">Setujui</button>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyBtyn-cjuhsnlEn-9Wao1tCcJfUQbf6GnY",
+        authDomain: "simarsip-apk.firebaseapp.com",
+        databaseURL: "https://simarsip-apk-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "simarsip-apk"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // Data Dummy yang sama dengan di Dashboard
+    const sharedDummyData = [
+    { 
+        id: 'dummy-1', 
+        type: 'ruangan', 
+        title: 'Rapat BEM', 
+        room: 'Ruang 101',      
+        name: 'Zaki (Ketua)', 
+        date: '2026-01-05', 
+        status: 'pending',
+        note: 'Rapat internal koordinasi proker tahunan.' 
+    },
+    { 
+        id: 'dummy-2', 
+        type: 'peralatan', 
+        title: 'Peminjaman Proyektor', 
+        equipmentName: 'Proyektor Epson', 
+        name: 'Admin HMIF', 
+        date: '2026-01-27', 
+        status: 'pending',
+        note: 'Digunakan untuk workshop fotografi di Lab.'
+    },
+    { 
+        id: 'dummy-5', 
+        type: 'peralatan', 
+        title: 'Peminjaman Kamera', 
+        equipmentName: 'Kamera DSLR Canon', 
+        name: 'Dika (Staff)', 
+        date: '2026-01-28', 
+        status: 'pending',
+        note: 'Dokumentasi kegiatan outdoor mahasiswa.'
+    }
+];
+    const params = new URLSearchParams(window.location.search);
+    const type = params.get('type');
+    const id = params.get('id');
+
+    function loadDetail() {
+        if (!type || !id) return;
+
+        // 1. Cek apakah ini data dummy
+        const dummy = sharedDummyData.find(d => d.id === id);
+        if (dummy) {
+            renderView(dummy, true);
+        } else {
+            // 2. Jika bukan dummy, tarik dari Firebase
+            db.ref(`pengajuan/${type}/${id}`).on('value', snap => {
+                const data = snap.val();
+                if (data) {
+                    renderView(data, false);
+                } else {
+                    document.getElementById('detail-content').innerHTML = "Data tidak ditemukan.";
+                }
+            });
+        }
+    }
+
+    function renderView(data, isDummy) {
+        const content = document.getElementById('detail-content');
+        const statusArea = document.getElementById('status-area');
+        const footer = document.getElementById('footer-action');
+
+        // Tampilkan Status Pill
+        statusArea.innerHTML = `<div class="status-pill status-${data.status}">${data.status}</div>`;
+
+        // Susun HTML Detail
+        let detailHtml = `
+            <div class="detail-label">Jenis Pengajuan</div>
+            <div class="detail-value" style="text-transform: capitalize;">${type}</div>
+
+            <div class="detail-label">Judul Kegiatan</div>
+            <div class="detail-value">${data.title || data.namaKegiatan}</div>
+            
+            <div class="detail-label">Pengaju</div>
+            <div class="detail-value">${data.name || data.pengaju || 'HMIF User'}</div>
+
+            <div class="detail-label">Tanggal</div>
+            <div class="detail-value">${data.date || data.createdAt}</div>
+            
+            <div class="detail-label">Keterangan</div>
+            <div class="detail-value">${data.note || data.purpose || '-'}</div>
+        `;
+
+        content.innerHTML = detailHtml;
+
+        // Kontrol Tombol Action
+        if (data.status === 'pending') {
+            footer.style.display = 'flex';
+            document.getElementById('btnApprove').onclick = () => updateStatus(isDummy, 'approved');
+            document.getElementById('btnReject').onclick = () => updateStatus(isDummy, 'rejected');
+        } else {
+            footer.style.display = 'none';
+        }
+    }
+
+    function updateStatus(isDummy, newStatus) {
+        if (isDummy) {
+            alert(`Simulasi: Data dummy berhasil di-${newStatus}`);
+            window.history.back();
+        } else {
+            db.ref(`pengajuan/${type}/${id}`).update({ status: newStatus })
+            .then(() => {
+                alert("Berhasil memperbarui status!");
+                window.history.back();
+            });
+        }
+    }
+
+    loadDetail();
+  </script>
+</body>
+</html>
